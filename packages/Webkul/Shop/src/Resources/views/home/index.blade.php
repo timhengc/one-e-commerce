@@ -11,7 +11,7 @@
     <meta name="keywords" content="{{ $channel->home_seo['meta_keywords'] ?? '' }}" />
 @endPush
 
-
+<x-shop::layouts>
     <!-- Page Title -->
     <x-slot:title>
         {{  $channel->home_seo['meta_title'] ?? '' }}
