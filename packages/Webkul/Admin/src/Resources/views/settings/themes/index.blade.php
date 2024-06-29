@@ -3,13 +3,13 @@
         @lang('admin::app.settings.themes.index.title')
     </x-slot>
    
-    <div class="flex justify-between items-center">
-        <p class="text-xl text-gray-800 dark:text-white font-bold">
+    <div class="flex items-center justify-between">
+        <p class="text-xl font-bold text-gray-800 dark:text-white">
             @lang('admin::app.settings.themes.index.title')
         </p>
         
-        <div class="flex gap-x-2.5 items-center">
-            <div class="flex gap-x-2.5 items-center">
+        <div class="flex items-center gap-x-2.5">
+            <div class="flex items-center gap-x-2.5">
                 {!! view_render_event('bagisto.admin.settings.themes.create.before') !!}
 
                 <!-- Create Button -->
@@ -60,7 +60,7 @@
                         <x-admin::modal ref="themeCreateModal">
                             <!-- Modal Header -->
                             <x-slot:header>
-                                <p class="text-lg text-gray-800 dark:text-white font-bold">
+                                <p class="text-lg font-bold text-gray-800 dark:text-white">
                                     @lang('admin::app.settings.themes.create.title')
                                 </p>
                             </x-slot>
@@ -143,11 +143,34 @@
 
                                     <x-admin::form.control-group.error control-name="type" />
                                 </x-admin::form.control-group>
+
+                                 <!-- Theme Selector -->
+                                <x-admin::form.control-group>
+                                    <x-admin::form.control-group.label class="required">
+                                        @lang('admin::app.settings.themes.create.themes')
+                                    </x-admin::form.control-group.label>
+
+                                    <x-admin::form.control-group.control
+                                        type="select"
+                                        id="theme_code"
+                                        name="theme_code"
+                                        :value="config('themes.admin-default')"
+                                        :label="trans('admin::app.settings.themes.create.themes')"
+                                    >
+                                        @foreach (config('themes.shop') as $themeCode => $theme)
+                                            <option value="{{ $themeCode }}" {{ old('theme') == $themeCode ? 'selected' : '' }}>
+                                                {{ $theme['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </x-admin::form.control-group.control>
+
+                                    <x-admin::form.control-group.error control-name="theme" />
+                                </x-admin::form.control-group>
                             </x-slot>
 
                             <x-slot:footer>
                                 <!-- Modal Submission -->
-                                <div class="flex gap-x-2.5 items-center">
+                                <div class="flex items-center gap-x-2.5">
                                     <button
                                         type="submit"
                                         class="primary-button"

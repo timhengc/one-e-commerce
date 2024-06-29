@@ -17,9 +17,7 @@ class URLRewriteController extends Controller
      *
      * @return void
      */
-    public function __construct(public URLRewriteRepository $urlRewriteRepository)
-    {
-    }
+    public function __construct(public URLRewriteRepository $urlRewriteRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -29,7 +27,7 @@ class URLRewriteController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(URLRewriteDataGrid::class)->toJson();
+            return datagrid(URLRewriteDataGrid::class)->process();
         }
 
         return view('admin::marketing.search-seo.url-rewrites.index');

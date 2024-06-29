@@ -18,8 +18,6 @@ window.app = createApp({
 
     mounted() {
         this.lazyImages();
-
-        this.animateBoxes();
     },
 
     methods: {
@@ -34,42 +32,20 @@ window.app = createApp({
                 entries.forEach(function(entry) {
                     if (entry.isIntersecting) {
                         let lazyImage = entry.target;
-    
+
                         lazyImage.src = lazyImage.dataset.src;
-                        
+
                         lazyImage.classList.remove('lazy');
-    
+
                         lazyImageObserver.unobserve(lazyImage);
                     }
                 });
             });
-    
+
             lazyImages.forEach(function(lazyImage) {
                 lazyImageObserver.observe(lazyImage);
             });
         },
-
-        animateBoxes() {
-            let animateBoxes = document.querySelectorAll('.scroll-trigger');
-
-            if (! animateBoxes.length) {
-                return;
-            }
-
-            animateBoxes.forEach((animateBox) => {
-                let animateBoxObserver = new IntersectionObserver(function(entries, observer) {
-                    entries.forEach(function(entry) {
-                        if (entry.isIntersecting) {
-                            animateBox.classList.remove('scroll-trigger--offscreen');
-
-                            animateBoxObserver.unobserve(animateBox);
-                        }
-                    });
-                });
-        
-                animateBoxObserver.observe(animateBox);
-            });
-        }
     },
 });
 
@@ -84,18 +60,10 @@ import Flatpickr from "./plugins/flatpickr";
 
 [
     Axios,
-    Emitter, 
-    Shop, 
-    VeeValidate, 
+    Emitter,
+    Shop,
+    VeeValidate,
     Flatpickr,
 ].forEach((plugin) => app.use(plugin));
 
-/**
- * Load event, the purpose of using the event is to mount the application
- * after all of our `Vue` components which is present in blade file have
- * been registered in the app. No matter what `app.mount()` should be
- * called in the last.
- */
-window.addEventListener("load", function (event) {
-    app.mount("#app");
-});
+export default app;

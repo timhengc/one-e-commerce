@@ -18,10 +18,7 @@ class MoneyTransfer extends Payment
      *
      * @return string
      */
-    public function getRedirectUrl()
-    {
-
-    }
+    public function getRedirectUrl() {}
 
     /**
      * Returns payment method additional information.
@@ -35,7 +32,7 @@ class MoneyTransfer extends Payment
         }
 
         return [
-            'title' => trans('admin::app.configuration.mailing-address'),
+            'title' => trans('admin::app.configuration.index.sales.payment-methods.mailing-address'),
             'value' => $this->getConfigData('mailing_address'),
         ];
     }

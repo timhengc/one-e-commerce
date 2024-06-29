@@ -20,8 +20,7 @@ class AttributeFamilyController extends Controller
     public function __construct(
         protected AttributeFamilyRepository $attributeFamilyRepository,
         protected AttributeRepository $attributeRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -31,7 +30,7 @@ class AttributeFamilyController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(AttributeFamilyDataGrid::class)->toJson();
+            return datagrid(AttributeFamilyDataGrid::class)->process();
         }
 
         return view('admin::catalog.families.index');

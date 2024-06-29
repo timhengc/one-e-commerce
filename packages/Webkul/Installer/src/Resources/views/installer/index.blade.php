@@ -61,38 +61,92 @@
         ];
 
         $currencies = [
-            'AED' => 'dirham',
-            'AFN' => 'israeli',
+            'AED' => 'united-arab-emirates-dirham',
+            'ARS' => 'argentine-peso',
+            'AUD' => 'australian-dollar',
+            'BDT' => 'bangladeshi-taka',
+            'BRL' => 'brazilian-real',
+            'CAD' => 'canadian-dollar',
+            'CHF' => 'swiss-franc',
+            'CLP' => 'chilean-peso',
             'CNY' => 'chinese-yuan',
+            'COP' => 'colombian-peso',
+            'CZK' => 'czech-koruna',
+            'DKK' => 'danish-krone',
+            'DZD' => 'algerian-dinar',
+            'EGP' => 'egyptian-pound',
             'EUR' => 'euro',
-            'GBP' => 'pound',
-            'INR' => 'rupee',
-            'IRR' => 'iranian',
+            'FJD' => 'fijian-dollar',
+            'GBP' => 'british-pound-sterling',
+            'HKD' => 'hong-kong-dollar',
+            'HUF' => 'hungarian-forint',
+            'IDR' => 'indonesian-rupiah',
+            'ILS' => 'israeli-new-shekel',
+            'INR' => 'indian-rupee',
+            'JOD' => 'jordanian-dinar',
             'JPY' => 'japanese-yen',
+            'KRW' => 'south-korean-won',
+            'KWD' => 'kuwaiti-dinar',
+            'KZT' => 'kazakhstani-tenge',
+            'LBP' => 'lebanese-pound',
+            'LKR' => 'sri-lankan-rupee',
+            'LYD' => 'libyan-dinar',
+            'MAD' => 'moroccan-dirham',
+            'MUR' => 'mauritian-rupee',
+            'MXN' => 'mexican-peso',
+            'MYR' => 'malaysian-ringgit',
+            'NGN' => 'nigerian-naira',
+            'NOK' => 'norwegian-krone',
+            'NPR' => 'nepalese-rupee',
+            'NZD' => 'new-zealand-dollar',
+            'OMR' => 'omani-rial',
+            'PAB' => 'panamanian-balboa',
+            'PEN' => 'peruvian-nuevo-sol',
+            'PHP' => 'philippine-peso',
+            'PKR' => 'pakistani-rupee',
+            'PLN' => 'polish-zloty',
+            'PYG' => 'paraguayan-guarani',
+            'QAR' => 'qatari-rial',
+            'RON' => 'romanian-leu',
             'RUB' => 'russian-ruble',
-            'SAR' => 'saudi',
+            'SAR' => 'saudi-riyal',
+            'SEK' => 'swedish-krona',
+            'SGD' => 'singapore-dollar',
+            'THB' => 'thai-baht',
+            'TND' => 'tunisian-dinar',
             'TRY' => 'turkish-lira',
+            'TWD' => 'new-taiwan-dollar',
             'UAH' => 'ukrainian-hryvnia',
-            'USD' => 'usd',
+            'USD' => 'united-states-dollar',
+            'UZS' => 'uzbekistani-som',
+            'VEF' => 'venezuelan-bolívar',
+            'VND' => 'vietnamese-dong',
+            'XAF' => 'cfa-franc-beac',
+            'XOF' => 'cfa-franc-bceao',
+            'ZAR' => 'south-african-rand',
+            'ZMW' => 'zambian-kwacha'
         ];
     @endphp
 
     <body>
         <div
             id="app"
-            class="container fixed"
+            class="container-fluide fixed w-full"
         >
-            <div class="flex [&amp;>*]:w-[50%] gap-[50px] justify-center items-center">
+            <div class="flex [&amp;>*]:w-[50%] gap-12 justify-center items-center">
                 <!-- Vue Component -->
                 <v-server-requirements></v-server-requirements>
             </div>
         </div>
 
         @pushOnce('scripts')
-            <script type="text/x-template" id="v-server-requirements-template">
+            <script
+                type="text/x-template"
+                id="v-server-requirements-template"
+            >
                 <!-- Left Side Welcome to Installation -->
                 <div class="flex flex-col justify-center">
-                    <div class="grid items-end max-w-[362px] m-auto h-[100vh]">
+                    <div class="m-auto grid h-[100vh] max-w-[362px] items-end">
                         <div class="grid gap-4">
                             <img
                                 src="{{ bagisto_asset('images/installer/bagisto-logo.svg', 'installer') }}"
@@ -100,71 +154,63 @@
                             >
 
                             <div class="grid gap-1.5">
-                                <p class="text-gray-800 text-[20px] font-bold">
+                                <p class="text-xl font-bold text-gray-800">
                                     @lang('installer::app.installer.index.installation-title')
                                 </p>
 
-                                <p class="text-gray-600 text-[14px]">
+                                <p class="text-sm text-gray-600">
                                     @lang('installer::app.installer.index.installation-info')
                                 </p>
                             </div>
 
-                            <div class="grid gap-3">
-                                <div
-                                    class="flex gap-1 text-[14px] text-gray-600"
-                                    :class="[stepStates.start == 'active' ? 'font-bold' : '', 'text-gray-600']"
-                                >
-                                    <span v-if="stepStates.start !== 'complete'">
+                            <div class="[&>*]:flex [&>*]:items-center [&>*]:gap-1 grid gap-3 text-sm text-gray-600">
+                                <!-- Start -->
+                                <div :class="[stepStates.start == 'active' ? 'font-bold' : '']">
+                                    <template v-if="stepStates.start !== 'complete'">
                                         <span
-                                            class="text-[20px]"
+                                            class="text-xl"
                                             :class="stepStates.start === 'pending' ? 'icon-checkbox-normal' : 'icon-right'"
                                         >
                                         </span>
-                                    </span>
+                                    </template>
 
-                                    <span v-else>
+                                    <template v-else>
                                         <span class="icon-tick text-green-500"></span>
-                                    </span>
+                                    </template>
 
                                     <p>@lang('installer::app.installer.index.start.main')</p>
                                 </div>
 
                                 <!-- Server Environment -->
-                                <div
-                                    class="flex gap-1 text-[14px] text-gray-600"
-                                    :class="[stepStates.systemRequirements == 'active' ? 'font-bold' : '', 'text-gray-600']"
-                                >
-                                    <span v-if="stepStates.systemRequirements !== 'complete'">
+                                <div :class="[stepStates.systemRequirements == 'active' ? 'font-bold' : '']">
+                                    <template v-if="stepStates.systemRequirements !== 'complete'">
                                         <span
-                                            class="text-[20px]"
+                                            class="text-xl"
                                             :class="stepStates.systemRequirements === 'pending' ? 'icon-checkbox-normal' : 'icon-right'"
                                         >
                                         </span>
-                                    </span>
+                                    </template>
 
-                                    <span v-else>
+                                    <template v-else>
                                         <span class="icon-tick text-green-500"></span>
-                                    </span>
+                                    </template>
 
                                     <p>@lang('installer::app.installer.index.server-requirements.title')</p>
                                 </div>
 
                                 <!-- ENV Database Configuration -->
-                                <div
-                                    class="flex gap-1 text-[14px] text-gray-600"
-                                    :class="[stepStates.envDatabase == 'active' ? 'font-bold' : '', 'text-gray-600']"
-                                >
-                                    <span v-if="stepStates.envDatabase !== 'complete'">
+                                <div :class="[stepStates.envDatabase == 'active' ? 'font-bold' : '']">
+                                    <template v-if="stepStates.envDatabase !== 'complete'">
                                         <span
-                                            class="text-[20px]"
+                                            class="text-xl"
                                             :class="stepStates.envDatabase === 'pending' ? 'icon-checkbox-normal' : 'icon-right'"
                                         >
                                         </span>
-                                    </span>
+                                    </template>
 
-                                    <span v-else>
+                                    <template v-else>
                                         <span class="icon-tick text-green-500"></span>
-                                    </span>
+                                    </template>
 
                                     <p>
                                         @lang('installer::app.installer.index.environment-configuration.title')
@@ -172,71 +218,78 @@
                                 </div>
 
                                 <!-- Ready For Installation -->
-                                <div
-                                    class="flex gap-1 text-[14px] text-gray-600"
-                                    :class="[stepStates.readyForInstallation == 'active' ? 'font-bold' : '', 'text-gray-600']"
-                                >
-                                    <span v-if="stepStates.readyForInstallation !== 'complete'">
+                                <div :class="[stepStates.readyForInstallation == 'active' ? 'font-bold' : '']">
+                                    <template v-if="stepStates.readyForInstallation !== 'complete'">
                                         <span
-                                            class="text-[20px]"
+                                            class="text-xl"
                                             :class="stepStates.readyForInstallation === 'pending' ? 'icon-checkbox-normal' : 'icon-right'"
                                         >
                                         </span>
-                                    </span>
+                                    </template>
 
-                                    <span v-else>
+                                    <template v-else>
                                         <span class="icon-tick text-green-500"></span>
-                                    </span>
+                                    </template>
 
                                     <p>@lang('installer::app.installer.index.ready-for-installation.title')</p>
+                                </div>
+                                
+                                <!-- Create Sample Product -->
+                                <div :class="[stepStates.createSampleProducts == 'active' ? 'font-bold' : '']">
+                                    <template v-if="stepStates.createSampleProducts !== 'complete'">
+                                        <span
+                                            class="text-xl"
+                                            :class="stepStates.createSampleProducts === 'pending' ? 'icon-checkbox-normal' : 'icon-right'"
+                                        >
+                                        </span>
+                                    </template>
+
+                                    <template v-else>
+                                        <span class="icon-tick text-green-500"></span>
+                                    </template>
+
+                                    <p>@lang('installer::app.installer.index.sample-products.title')</p>
                                 </div> 
 
                                 <!-- Create Admin Configuration -->
-                                <div
-                                    class="flex gap-1 text-[14px] text-gray-600"
-                                    :class="[stepStates.createAdmin == 'active' ? 'font-bold' : '', 'text-gray-600']"
-                                >
-                                    <span v-if="stepStates.createAdmin !== 'complete'">
+                                <div :class="[stepStates.createAdmin == 'active' ? 'font-bold' : '']">
+                                    <template v-if="stepStates.createAdmin !== 'complete'">
                                         <span
-                                            class="text-[20px]"
+                                            class="text-xl"
                                             :class="stepStates.createAdmin === 'pending' ? 'icon-checkbox-normal' : 'icon-right'"
                                         >
                                         </span>
-                                    </span>
+                                    </template>
 
-                                    <span v-else>
+                                    <template v-else>
                                         <span class="icon-tick text-green-500"></span>
-                                    </span>
+                                    </template>
 
                                     <p>@lang('installer::app.installer.index.create-administrator.title')</p>
                                 </div>
 
                                 <!-- Installation Completed -->
-                                <div
-                                    class="flex gap-1 text-[14px] text-gray-600"
-                                    :class="[stepStates.installationCompleted == 'active' ? 'font-bold' : '', 'text-gray-600']"
-                                >
-                                    <span v-if="stepStates.installationCompleted !== 'complete'">
+                                <div :class="[stepStates.installationCompleted == 'active' ? 'font-bold' : '']">
+                                    <template v-if="stepStates.installationCompleted !== 'complete'">
                                         <span
-                                            class="text-[20px]"
+                                            class="text-xl"
                                             :class="stepStates.installationCompleted === 'pending' ? 'icon-checkbox-normal' : 'icon-right'"
                                         >
                                         </span>
-                                    </span>
+                                    </template>
 
-                                    <span v-else>
+                                    <template v-else>
                                         <span class="icon-tick text-green-500"></span>
-                                    </span>
+                                    </template>
 
                                     <p>@lang('installer::app.installer.index.installation-completed.title')</p>
                                 </div>
-
                             </div>
                         </div>
 
-                        <p class="place-self-end w-full text-left mb-[24px]">
+                        <p class="mb-6 w-full place-self-end text-left">
                             <a
-                                class="bg-white underline text-blue-600"
+                                class="bg-white text-blue-600 underline"
                                 href="https://bagisto.com/en/"
                             >
                                 @lang('installer::app.installer.index.bagisto')
@@ -245,7 +298,7 @@
                             <span>@lang('installer::app.installer.index.bagisto-info')</span>
 
                             <a
-                                class="bg-white underline text-blue-600"
+                                class="bg-white text-blue-600 underline"
                                 href="https://webkul.com/"
                             >
                                 @lang('installer::app.installer.index.webkul')
@@ -257,7 +310,7 @@
                 <!-- Right Side Components -->
                 <!-- Start -->
                 <div
-                    class="w-full max-w-[568px] bg-white rounded-lg shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)] border-[1px] border-gray-300"
+                    class="w-full max-w-[568px] rounded-lg border-[1px] border-gray-300 bg-white shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)]"
                     v-if="currentStep == 'start'"
                 >
                     <x-installer::form
@@ -270,21 +323,21 @@
                             enctype="multipart/form-data"
                             ref="multiLocaleForm"
                         >
-                            <div class="flex justify-between items-center gap-2.5 px-4 py-[11px] border-b-[1px] border-gray-300">
-                                <p class="text-[20px] text-gray-800 font-bold">
+                            <div class="border-b border-gray-300 px-4 py-3">
+                                <p class="text-xl font-bold text-gray-800">
                                     @lang('installer::app.installer.index.start.welcome-title')
                                 </p>
                             </div>
 
-                            <div class="flex flex-col gap-3 items-center h-[384px] px-[30px] py-4 overflow-y-auto">
+                            <div class="flex h-[388px] flex-col items-center gap-3 overflow-y-auto px-7 py-4">
                                 <div class="container overflow-hidden">
-                                    <div class="flex flex-col gap-3 justify-end h-[100px]">
-                                        <p class="text-gray-600 text-[14px] text-center">
+                                    <div class="flex h-[100px] flex-col justify-end gap-3">
+                                        <p class="text-center text-sm text-gray-600">
                                             @lang('installer::app.installer.index.installation-description')
                                         </p>
                                     </div>
 
-                                    <div class="flex flex-col gap-3 justify-center h-[284px] px-[30px] py-4 overflow-y-auto">
+                                    <div class="flex h-72 flex-col justify-center gap-3 overflow-y-auto px-7 py-4">
                                         <!-- Application Name -->
                                         <x-installer::form.control-group class="mb-2.5">
                                             <x-installer::form.control-group.label>
@@ -308,7 +361,7 @@
 
                                                 @foreach ($locales as $value => $label)
                                                     <option value="{{ $value }}">
-                                                        @lang("installer::app.installer.index.$label")
+                                                        {{ ucfirst($label) }}
                                                     </option>
                                                 @endforeach
                                             </x-installer::form.control-group.control>
@@ -319,10 +372,10 @@
                                 </div>
                             </div>
                         
-                            <div class="flex px-4 py-2.5 justify-end items-center">
+                            <div class="flex items-center justify-end px-4 py-3">
                                 <button
                                     type="button"
-                                    class="px-3 py-1.5 bg-blue-600 border border-blue-700 rounded-md text-gray-50 font-semibold cursor-pointer hover:opacity-90"
+                                    class="primary-button"
                                     tabindex="0"
                                     @click="nextForm"
                                 >
@@ -334,28 +387,31 @@
                 </div>
 
                 <!-- Systme Requirements -->
-                <div class="w-full max-w-[568px] bg-white rounded-lg shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)] border-[1px] border-gray-300" v-if="currentStep == 'systemRequirements'">
-                    <div class="flex justify-between items-center gap-2.5 px-4 py-[11px] border-b-[1px] border-gray-300">
-                        <p class="text-[20px] text-gray-800 font-bold">
+                <div
+                    class="w-full max-w-[568px] rounded-lg border border-gray-300 bg-white shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)]"   
+                    v-if="currentStep == 'systemRequirements'"
+                >
+                    <div class="flex items-center justify-between gap-2.5 border-b border-gray-300 px-4 py-3">
+                        <p class="text-xl font-bold text-gray-800">
                             @lang('installer::app.installer.index.server-requirements.title')
                         </p>
                     </div>
 
-                    <div class="flex flex-col gap-[15px] px-[30px] py-4 border-b-[1px] border-gray-300 h-[486px] overflow-y-auto">
-                        <div class="flex gap-1">
-                            <span class="{{ $phpVersion['supported'] ? 'icon-tick text-[20px] text-green-500' : '' }}"></span>
+                    <div class="flex h-[486px] flex-col gap-4 overflow-y-auto border-b border-gray-300 px-7 py-4">
+                        <div class="flex items-center gap-1">
+                            <span class="{{ $phpVersion['supported'] ? 'icon-tick text-xl text-green-500' : '' }}"></span>
 
-                            <p class="text-[14px] text-gray-600 font-semibold">
+                            <p class="text-sm font-semibold text-gray-600">
                                 @lang('installer::app.installer.index.server-requirements.php') <span class="font-normal">(@lang('installer::app.installer.index.server-requirements.php-version'))</span>
                             </p>
                         </div>
 
                         @foreach ($requirements['requirements'] as $requirement)
                             @foreach ($requirement as $key => $item)
-                                <div class="flex gap-1">
-                                    <span class="{{ $item ? 'icon-tick text-green-500' : 'icon-cross text-red-500' }} text-[20px]"></span>
+                                <div class="flex items-center gap-1">
+                                    <span class="{{ $item ? 'icon-tick text-green-500' : 'icon-cross text-red-500' }} text-xl"></span>
 
-                                    <p class="text-[14px] text-gray-600 font-semibold">
+                                    <p class="text-sm font-semibold text-gray-600">
                                         @lang('installer::app.installer.index.server-requirements.' . $key)
                                     </p>
                                 </div>
@@ -374,9 +430,9 @@
                         }
                     @endphp
 
-                    <div class="flex px-4 py-2.5 justify-between items-center">
+                    <div class="flex items-center justify-between px-4 py-2.5">
                         <div
-                            class="text-[12px] text-blue-600 font-semibold cursor-pointer"
+                            class="cursor-pointer text-base font-semibold text-blue-600"
                             role="button"
                             aria-label="@lang('installer::app.installer.index.back')"
                             tabindex="0"
@@ -397,7 +453,7 @@
 
                 <!-- Environment Configuration Database -->
                 <div
-                    class="w-full max-w-[568px] bg-white rounded-lg shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)] border-[1px] border-gray-300"
+                    class="w-full max-w-[568px] rounded-lg border-[1px] border-gray-300 bg-white shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)]"
                     v-if="currentStep == 'envDatabase'"
                 >
                     <x-installer::form
@@ -409,13 +465,13 @@
                             @submit.prevent="handleSubmit($event, FormSubmit)"
                             enctype="multipart/form-data"
                         >
-                            <div class="flex justify-between items-center gap-2.5 px-4 py-[11px] border-b-[1px] border-gray-300">
-                                <p class="text-[20px] text-gray-800 font-bold">
+                            <div class="flex items-center justify-between gap-2.5 border-b border-gray-300 px-4 py-3">
+                                <p class="text-xl font-bold text-gray-800">
                                     @lang('installer::app.installer.index.environment-configuration.title')
                                 </p>
                             </div>
 
-                            <div class="flex flex-col gap-3 px-[30px] py-4 border-b-[1px] border-gray-300 h-[484px] overflow-y-auto">
+                            <div class="flex h-[484px] flex-col gap-3 overflow-y-auto border-b border-gray-300 px-7 py-4">
                                 <!-- Database Connection-->
                                 <x-installer::form.control-group class="mb-2.5">
                                     <x-installer::form.control-group.label class="required">
@@ -556,9 +612,9 @@
                                 </x-installer::form.control-group>
                             </div>
 
-                            <div class="flex px-4 py-2.5 justify-between items-center">
+                            <div class="flex items-center justify-between px-4 py-2.5">
                                 <div
-                                    class="text-[12px] text-blue-600 font-semibold cursor-pointer"
+                                    class="cursor-pointer text-base font-semibold text-blue-600"
                                     role="button"
                                     :aria-label="@lang('installer::app.installer.index.back')"
                                     tabindex="0"
@@ -569,7 +625,7 @@
 
                                 <button
                                     type="submit"
-                                    class="px-3 py-1.5 bg-blue-600 border border-blue-700 rounded-md text-gray-50 font-semibold cursor-pointer hover:opacity-90"
+                                    class="primary-button"
                                     tabindex="0"
                                 >
                                     @lang('installer::app.installer.index.continue')
@@ -581,7 +637,7 @@
 
                 <!-- Ready For Installation -->
                 <div
-                    class="w-full max-w-[568px] bg-white rounded-lg shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)] border-[1px] border-gray-300"
+                    class="w-full max-w-[568px] rounded-lg border-[1px] border-gray-300 bg-white shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)]"
                     v-if="currentStep == 'readyForInstallation'"
                 >
                     <x-installer::form
@@ -593,32 +649,32 @@
                             @submit.prevent="handleSubmit($event, FormSubmit)"
                             enctype="multipart/form-data"
                         >
-                            <div class="flex justify-between items-center gap-2.5 px-4 py-[11px] border-b-[1px] border-gray-300">
-                                <p class="text-[20px] text-gray-800 font-bold">
+                            <div class="flex items-center justify-between gap-2.5 border-b border-gray-300 px-4 py-3">
+                                <p class="text-xl font-bold text-gray-800">
                                     @lang('installer::app.installer.index.ready-for-installation.install')
                                 </p>
                             </div>
 
-                            <div class="flex flex-col gap-[15px] justify-center px-[30px] py-4 border-b-[1px] border-gray-300 h-[484px] overflow-y-auto">
-                                <div class="flex flex-col gap-4">
-                                    <p class="text-[18px] text-gray-800 font-semibold">
+                            <div class="flex h-[484px] flex-col justify-center gap-4 overflow-y-auto border-b border-gray-300 px-7 py-4">
+                                <div class="grid gap-1">
+                                    <p class="text-lg font-semibold text-gray-800">
                                         @lang('installer::app.installer.index.ready-for-installation.install-info')
                                     </p>
 
-                                    <div class="grid gap-2.5">
-                                        <label class="text-[14px] text-gray-600">
+                                    <div class="grid gap-4">
+                                        <label class="text-sm text-gray-600">
                                             @lang('installer::app.installer.index.ready-for-installation.install-info-button')
                                         </label>
 
                                         <div class="grid gap-3">
-                                            <div class="flex gap-1 text-[14px] text-gray-600">
-                                                <span class="icon-right text-[20px]"></span>
+                                            <div class="flex items-center gap-1 text-sm text-gray-600">
+                                                <span class="icon-right text-xl"></span>
 
                                                 <p>@lang('installer::app.installer.index.ready-for-installation.create-databsae-table')</p>
                                             </div>
 
-                                            <div class="flex gap-1 text-[14px] text-gray-600">
-                                                <span class="icon-right text-[20px]"></span>
+                                            <div class="flex items-center gap-1 text-sm text-gray-600">
+                                                <span class="icon-right text-xl"></span>
 
                                                 <p>@lang('installer::app.installer.index.ready-for-installation.populate-database-table')</p>
                                             </div>
@@ -627,9 +683,9 @@
                                 </div>
                             </div>
 
-                            <div class="flex px-4 py-2.5 justify-between items-center">
+                            <div class="flex items-center justify-between px-4 py-2.5">
                                 <div
-                                    class="text-[12px] text-blue-600 font-semibold cursor-pointer"
+                                    class="cursor-pointer text-base font-semibold text-blue-600"
                                     role="button"
                                     :aria-label="@lang('installer::app.installer.index.back')"
                                     tabindex="0"
@@ -640,7 +696,7 @@
 
                                 <button
                                     type="submit"
-                                    class="px-3 py-1.5 bg-blue-600 border border-blue-700 rounded-md text-gray-50 font-semibold cursor-pointer hover:opacity-90"
+                                    class="cursor-pointer rounded-md border border-blue-700 bg-blue-600 px-3 py-1.5 font-semibold text-gray-50 hover:opacity-90"
                                 >
                                     @lang('installer::app.installer.index.ready-for-installation.start-installation')
                                 </button>
@@ -651,30 +707,30 @@
 
                 <!-- Installation Processing -->
                 <div
-                    class="w-full max-w-[568px] bg-white rounded-lg shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)] border-[1px] border-gray-300"
+                    class="w-full max-w-[568px] rounded-lg border-[1px] border-gray-300 bg-white shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)]"
                     v-if="currentStep == 'installProgress'"
                 >
-                    <div class="flex justify-between items-center gap-2.5 px-4 py-[11px] border-b-[1px] border-gray-300">
-                        <p class="text-[20px] text-gray-800 font-bold">
+                    <div class="flex items-center justify-between gap-2.5 border-b border-gray-300 px-4 py-3">
+                        <p class="text-xl font-bold text-gray-800">
                             @lang('installer::app.installer.index.installation-processing.title')
                         </p>
                     </div>
 
-                    <div class="flex flex-col gap-[15px] justify-center px-[30px] py-4 h-[484px] overflow-y-auto">
+                    <div class="flex h-[484px] flex-col justify-center gap-4 overflow-y-auto px-7 py-4">
                         <div class="flex flex-col gap-4">
-                            <p class="text-[18px] text-gray-800 font-bold">
+                            <p class="text-lg font-bold text-gray-800">
                                 @lang('installer::app.installer.index.installation-processing.bagisto')
                             </p>
 
                             <div class="grid gap-2.5">
                                 <!-- Spinner -->
                                 <img
-                                    class="animate-spin h-5 w-5 text-navyBlue"
+                                    class="text-navyBlue h-5 w-5 animate-spin"
                                     src="{{ bagisto_asset('images/installer/spinner.svg', 'installer') }}"
                                     alt="Loading"
                                 />
 
-                                <p class="text-[14px] text-gray-600">
+                                <p class="text-sm text-gray-600">
                                     @lang('installer::app.installer.index.installation-processing.bagisto-info')
                                 </p>
                             </div>
@@ -684,7 +740,7 @@
 
                 <!-- Environment Configuration .ENV -->
                 <div
-                    class="w-full max-w-[568px] bg-white rounded-lg shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)] border-[1px] border-gray-300"
+                    class="w-full max-w-[568px] rounded-lg border-[1px] border-gray-300 bg-white shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)]"
                     v-if="currentStep == 'envConfiguration'"
                 >
                     <x-installer::form
@@ -696,13 +752,13 @@
                             @submit.prevent="handleSubmit($event, nextForm)"
                             enctype="multipart/form-data"
                         >
-                            <div class="flex justify-between items-center gap-2.5 px-4 py-[11px] border-b-[1px] border-gray-300">
-                                <p class="text-[20px] text-gray-800 font-bold">
+                            <div class="flex items-center justify-between gap-2.5 border-b border-gray-300 px-4 py-3">
+                                <p class="text-xl font-bold text-gray-800">
                                     @lang('installer::app.installer.index.environment-configuration.title')
                                 </p>
                             </div>
 
-                            <div class="flex flex-col gap-3 px-[30px] py-4 border-b-[1px] border-gray-300 h-[484px] overflow-y-auto">
+                            <div class="flex h-[484px] flex-col gap-3 overflow-y-auto border-b border-gray-300 px-7 py-4">
                                 <!-- Application Name -->
                                 <x-installer::form.control-group class="mb-2.5">
                                     <x-installer::form.control-group.label class="required">
@@ -781,13 +837,16 @@
                                     <x-installer::form.control-group.error control-name="app_timezone" />
                                 </x-installer::form.control-group>
 
-                                <div class="p-1.5" :style="warning['container'], warning['message']">
+                                <div
+                                    class="p-1.5"
+                                    :style="warning['container'], warning['message']"
+                                >
                                     <i class="icon-limited !text-black"></i>
 
                                     @lang('installer::app.installer.index.environment-configuration.warning-message')
                                 </div>
 
-                                <div class="flex gap-2.5">
+                                <div class="grid grid-cols-2 gap-2.5">
                                     <!-- Application Default Locale -->
                                     <x-installer::form.control-group class="w-full">
                                         <x-installer::form.control-group.label class="required">
@@ -839,15 +898,15 @@
                                     </x-installer::form.control-group>
                                 </div>
 
-                                <div class="flex gap-2.5">
+                                <div class="grid grid-cols-2 gap-2.5">
+                                    <!-- Allowed Locales -->
                                     <x-installer::form.control-group class="w-full">
                                         <x-installer::form.control-group.label class="required">
                                             @lang('installer::app.installer.index.environment-configuration.allowed-locales')
                                         </x-installer::form.control-group.label>
 
-                                        <!-- Allowed Locales -->
                                         @foreach ($locales as $key => $locale)
-                                            <x-installer::form.control-group class="flex gap-2.5 w-max !mb-0 p-1.5 cursor-pointer select-none">
+                                            <x-installer::form.control-group class="!mb-0 flex w-max cursor-pointer select-none items-center gap-1">
                                                 @php
                                                     $selectedOption = ($key == config('app.locale'));
                                                 @endphp
@@ -871,7 +930,7 @@
 
                                                 <x-installer::form.control-group.label
                                                     for="allowed_locale[{{ $key }}]"
-                                                    class="!text-[14px] !font-semibold cursor-pointer"
+                                                    class="cursor-pointer !text-sm !font-semibold"
                                                 >
                                                     @lang("installer::app.installer.index.$locale")
                                                 </x-installer::form.control-group.label>
@@ -879,14 +938,14 @@
                                         @endforeach
                                     </x-installer::form.control-group>
 
+                                    <!-- Allowed Currencies -->
                                     <x-installer::form.control-group class="w-full">
                                         <x-installer::form.control-group.label class="required">
                                             @lang('installer::app.installer.index.environment-configuration.allowed-currencies')
                                         </x-installer::form.control-group.label>
     
-                                        <!-- Allowed Currencies -->
                                         @foreach ($currencies as $key => $currency)
-                                            <x-installer::form.control-group class="flex gap-2.5 w-max !mb-0 p-1.5 cursor-pointer select-none">
+                                            <x-installer::form.control-group class="!mb-0 flex w-max cursor-pointer select-none items-center gap-1">
                                                 @php
                                                     $selectedOption = $key == config('app.currency');
                                                 @endphp
@@ -894,7 +953,7 @@
                                                 <x-installer::form.control-group.control
                                                     type="hidden"
                                                     :name="$key"
-                                                    :value="(bool) $selectedOption"
+                                                    :value="$selectedOption"
                                                 />
 
                                                 <x-installer::form.control-group.control
@@ -903,14 +962,14 @@
                                                     :name="$key"
                                                     value="1"
                                                     :for="'currency[' . $key . ']'"
-                                                    :checked="(bool) $selectedOption"
-                                                    :disabled="(bool) $selectedOption"
+                                                    :checked="$selectedOption"
+                                                    :disabled="$selectedOption"
                                                     @change="pushAllowedCurrency"
                                                 />
 
                                                 <x-installer::form.control-group.label
                                                     for="currency[{{ $key }}]"
-                                                    class="!text-[14px] !font-semibold cursor-pointer"
+                                                    class="cursor-pointer !text-sm !font-semibold"
                                                 >
                                                     @lang("installer::app.installer.index.environment-configuration.$currency")
                                                 </x-installer::form.control-group.label>
@@ -920,23 +979,89 @@
                                 </div>
                             </div>
 
-                            <div class="flex px-4 py-2.5 justify-end items-center">
-                                <button
-                                    type="submit"
-                                    class="px-3 py-1.5 bg-blue-600 border border-blue-700 rounded-md text-gray-50 font-semibold cursor-pointer hover:opacity-90"
+                            <div class="flex items-center justify-end px-4 py-2.5">
+                                <x-installer::button
+                                    button-type="submit"
+                                    class="primary-button"
+                                    :title="trans('installer::app.installer.index.continue')"
                                     tabindex="0"
-                                >
-                                    @lang('installer::app.installer.index.continue')
-                                </button>
+                                    ::loading="isLoading"
+                                    ::disabled="isLoading"
+                                />
+                            </div>
+                        </form>
+                    </x-installer::form>
+                </div>
+
+                <!-- Create Sample Products -->
+                <div
+                    class="w-full max-w-[568px] rounded-lg border border-gray-300 bg-white shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)]"
+                    v-if="currentStep == 'createSampleProducts'"
+                >
+                    <x-installer::form
+                        v-slot="{ meta, errors, handleSubmit }"
+                        as="div"
+                        ref="createSampleProducts"
+                    >
+                        <form
+                            @submit.prevent="handleSubmit($event, FormSubmit)"
+                            enctype="multipart/form-data"
+                        >
+                            <div class="flex items-center justify-between gap-2.5 border-b border-gray-300 px-4 py-3">
+                                <p class="text-xl font-bold text-gray-800">
+                                    @lang('installer::app.installer.index.sample-products.title') 
+                                </p>
                             </div>
 
+                            <div class="flex h-[484px] flex-col gap-3 overflow-y-auto border-b border-gray-300 px-7 py-4">
+                                <!-- Sample Products -->
+                                <x-admin::form.control-group.label>
+                                    @lang("installer::app.installer.index.sample-products.sample-products")
+                                </x-admin::form.control-group.label>
+                            
+                                <x-installer::form.control-group.control
+                                    type="select"
+                                    id="sample_products"
+                                    name="sample_products"
+                                    for="sample_products"
+                                    :value="0"
+                                >
+                                    <option value="1">
+                                        @lang('installer::app.installer.index.sample-products.yes')
+                                    </option>
+                            
+                                    <option value="0">
+                                        @lang('installer::app.installer.index.sample-products.no')
+                                    </option>
+                                </x-installer::form.control-group.control>
+                            
+                                <a
+                                    href="{{ Storage::disk('public')->url('data-transfer/samples/products.csv') }}"
+                                    download="products.csv"
+                                    id="source-sample-link"
+                                    class="mt-1 cursor-pointer text-right text-sm text-blue-600 transition-all hover:underline"
+                                >
+                                    @lang('installer::app.installer.index.sample-products.download-sample')
+                                </a>
+                            </div>
+
+                            <div class="flex items-center justify-end px-4 py-2.5">
+                                <x-installer::button
+                                    button-type="submit"
+                                    class="primary-button"
+                                    :title="trans('installer::app.installer.index.continue')"
+                                    tabindex="0"
+                                    ::loading="isLoading"
+                                    ::disabled="isLoading"
+                                />
+                             </div>
                         </form>
                     </x-installer::form>
                 </div>
 
                 <!-- Create Administrator -->
                 <div
-                    class="w-full max-w-[568px] bg-white rounded-lg shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)] border-[1px] border-gray-300"
+                    class="w-full max-w-[568px] rounded-lg border border-gray-300 bg-white shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)]"
                     v-if="currentStep == 'createAdmin'"
                 >
                     <x-installer::form
@@ -948,13 +1073,13 @@
                             @submit.prevent="handleSubmit($event, FormSubmit)"
                             enctype="multipart/form-data"
                         >
-                            <div class="flex justify-between items-center gap-2.5 px-4 py-[11px] border-b-[1px] border-gray-300">
-                                <p class="text-[20px] text-gray-800 font-bold">
+                            <div class="flex items-center justify-between gap-2.5 border-b border-gray-300 px-4 py-3">
+                                <p class="text-xl font-bold text-gray-800">
                                     @lang('installer::app.installer.index.create-administrator.title')
                                 </p>
                             </div>
 
-                            <div class="flex flex-col gap-3 px-[30px] py-4 border-b-[1px] border-gray-300 h-[484px] overflow-y-auto">
+                            <div class="flex h-[484px] flex-col gap-3 overflow-y-auto border-b border-gray-300 px-7 py-4">
                                 <!-- Admin -->
                                 <x-installer::form.control-group class="mb-2.5">
                                     <x-installer::form.control-group.label class="required">
@@ -1026,10 +1151,10 @@
                                 </x-installer::form.control-group>
                             </div>
 
-                            <div class="flex px-4 py-2.5 justify-end items-center">
+                            <div class="flex items-center justify-end px-4 py-2.5">
                                 <button
                                     type="submit"
-                                    class="px-3 py-1.5 bg-blue-600 border border-blue-700 rounded-md text-gray-50 font-semibold cursor-pointer hover:opacity-90"
+                                    class="primary-button"
                                     tabindex="0"
                                 >
                                     @lang('installer::app.installer.index.continue')
@@ -1042,42 +1167,42 @@
 
                 <!-- Installation Completed -->
                 <div
-                    class="w-full max-w-[568px] bg-white rounded-lg shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)] border-[1px] border-gray-300"
+                    class="w-full max-w-[568px] rounded-lg border border-gray-300 bg-white shadow-[0px_8px_10px_0px_rgba(0,0,0,0.05)]"
                     v-if="currentStep == 'installationCompleted'"
                 >
-                    <div class="flex justify-between items-center gap-2.5 px-4 py-[11px] border-b-[1px] border-gray-300">
-                        <p class="text-[20px] text-gray-800 font-bold">
+                    <div class="flex items-center justify-between gap-2.5 border-b border-gray-300 px-4 py-3">
+                        <p class="text-xl font-bold text-gray-800">
                             @lang('installer::app.installer.index.installation-completed.title')
                         </p>
                     </div>
 
-                    <div class="flex flex-col gap-[15px] justify-center px-[30px] py-4 border-b-[1px] border-gray-300 h-[484px] overflow-y-auto">
+                    <div class="flex h-[484px] flex-col justify-center gap-4 overflow-y-auto border-b border-gray-300 px-7 py-4">
                         <div class="flex flex-col gap-4">
-                            <div class="flex items-center justify-center rounded-full border border-green-500 w-[30px] h-[30px]">
-                                <span class="icon-tick text-[20px] text-green-500 font-semibold"></span>
+                            <div class="flex h-8 w-8 items-center justify-center rounded-full border border-green-500">
+                                <span class="icon-tick text-xl font-semibold text-green-500"></span>
                             </div>
 
                             <div class="grid gap-2.5">
-                                <p class="text-[18px] text-gray-800 font-semibold">
+                                <p class="text-lg font-semibold text-gray-800">
                                     @lang('installer::app.installer.index.installation-completed.title')
                                 </p>
 
-                                <p class="text-[14px] text-gray-600">
+                                <p class="text-sm text-gray-600">
                                     @lang('installer::app.installer.index.installation-completed.title-info')
                                 </p>
 
                                 <!-- Admin & Shop both buttons -->
-                                <div class="flex gap-4 items-center">
+                                <div class="flex items-center gap-4">
                                     <a
                                         href="{{ URL('/admin/login')}}"
-                                        class="px-3 py-1.5 bg-white border border-blue-700 rounded-md text-blue-600 font-semibold cursor-pointer hover:opacity-90"
+                                        class="cursor-pointer rounded-md border border-blue-700 bg-white px-3 py-1.5 font-semibold text-blue-600 hover:opacity-90"
                                     >
                                         @lang('installer::app.installer.index.installation-completed.admin-panel')
                                     </a>
 
                                     <a
                                         href="{{ URL('/')}}"
-                                        class="px-3 py-1.5 bg-blue-600 border border-blue-700 rounded-md text-gray-50 font-semibold cursor-pointer hover:opacity-90"
+                                        class="cursor-pointer rounded-md border border-blue-700 bg-blue-600 px-3 py-1.5 font-semibold text-gray-50 hover:opacity-90"
                                     >
                                         @lang('installer::app.installer.index.installation-completed.customer-panel')
                                     </a>
@@ -1086,17 +1211,17 @@
                         </div>
                     </div>
 
-                    <div class="flex px-4 py-2.5 justify-between items-center">
+                    <div class="flex items-center justify-between px-4 py-2.5">
                         <a
                             href="https://forums.bagisto.com"
-                            class="text-[12px] text-blue-600 font-semibold cursor-pointer"
+                            class="cursor-pointer text-xs font-semibold text-blue-600"
                         >
                             @lang('installer::app.installer.index.installation-completed.bagisto-forums')
                         </a>
 
                         <a
                             href="https://bagisto.com/en/extensions"
-                            class="px-3 py-1.5 bg-white border border-blue-700 rounded-md text-blue-600 font-semibold cursor-pointer hover:opacity-90"
+                            class="cursor-pointer rounded-md border border-blue-700 bg-white px-3 py-1.5 font-semibold text-blue-600 hover:opacity-90"
                         >
                             @lang('installer::app.installer.index.installation-completed.explore-bagisto-extensions')
                         </a>
@@ -1130,6 +1255,7 @@
                                 envDatabase: 'pending',
                                 readyForInstallation: 'pending',
                                 envConfiguration: 'pending',
+                                createSampleProducts: 'pending',
                                 createAdmin: 'pending',
                                 installationCompleted: 'pending',
                             },
@@ -1141,6 +1267,7 @@
                                 'readyForInstallation',
                                 'installProgress',
                                 'envConfiguration',
+                                'createSampleProducts',
                                 'createAdmin',
                                 'installationCompleted',
                             ],
@@ -1150,6 +1277,8 @@
 
                                 message: 'color: #1F2937',
                             },
+
+                            isLoading: false,
                         }
                     },
 
@@ -1180,8 +1309,12 @@
                                     this.startMigration(setErrors);
                                 },
 
+                                createSampleProducts: (setErrors) => {
+                                    this.createSampleProducts(params, setErrors);
+                                },
+
                                 createAdmin: (setErrors) => {
-                                    this.completeStep('createAdmin', 'installationCompleted', 'active', 'complete', setErrors);
+                                    this.isLoading = true;
 
                                     this.saveAdmin(params, setErrors);
                                 },
@@ -1294,19 +1427,50 @@
                                 'selectedParameters': selectedParams
                             })
                                 .then((response) => {
-                                    this.completeStep('envConfiguration', 'createAdmin', 'active', 'complete');
+                                    this.completeStep('readyForInstallation', 'createSampleProducts', 'active', 'complete');
 
-                                    this.currentStep = 'createAdmin';
+                                    this.currentStep = 'createSampleProducts';
                             })
                                 .catch(error => {
                                     setErrors(error.response.data.errors);
                                 });
                         },
 
+                        createSampleProducts(params, setErrors) {
+                            if (params.sample_products == 1){
+                                this.isLoading = true;
+
+                                this.$axios.post("{{ route('installer.sample_products_setup') }}",{
+                                    'selectedLocales': this.locales.allowed,
+                                    'selectedCurrencies': this.currencies.allowed,
+                                })
+                                    .then((response) => {
+                                        this.isLoading = false;
+
+                                        this.completeStep('createSampleProducts', 'createAdmin', 'active', 'complete');
+
+                                        this.currentStep = 'createAdmin';
+                                    })
+                                    .catch(error => {
+                                        setErrors(error.response.data.errors);
+                                    });
+                            } else {
+                                this.completeStep('createSampleProducts', 'createAdmin', 'active', 'complete');
+
+                                this.currentStep = 'createAdmin';
+                            }    
+                        },
+
                         saveAdmin(params, setErrors) {
                             this.$axios.post("{{ route('installer.admin_config_setup') }}", params)
                                 .then((response) => {
+                                    this.isLoading = false;
+
                                     this.currentStep = 'installationCompleted';
+
+                                    if (response.data) {
+                                        this.completeStep('createAdmin', 'installationCompleted', 'active', 'complete', setErrors);
+                                    }
                                 })
                                 .catch(error => {
                                     setErrors(error.response.data.errors);

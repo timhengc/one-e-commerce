@@ -14,9 +14,7 @@ class AddressController extends Controller
      *
      * @return void
      */
-    public function __construct(protected CustomerAddressRepository $customerAddressRepository)
-    {
-    }
+    public function __construct(protected CustomerAddressRepository $customerAddressRepository) {}
 
     /**
      * Address route index page.
@@ -71,7 +69,7 @@ class AddressController extends Controller
 
         Event::dispatch('customer.addresses.create.after', $customerAddress);
 
-        session()->flash('success', trans('shop::app.customers.account.addresses.create-success'));
+        session()->flash('success', trans('shop::app.customers.account.addresses.index.create-success'));
 
         return redirect()->route('shop.customers.account.addresses.index');
     }
@@ -81,7 +79,7 @@ class AddressController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function edit($id)
+    public function edit(int $id)
     {
         $address = $this->customerAddressRepository->findOneWhere([
             'id'          => $id,
@@ -98,15 +96,14 @@ class AddressController extends Controller
     /**
      * Edit's the pre-made resource of customer called Address.
      *
-     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update($id, AddressRequest $request)
+    public function update(int $id, AddressRequest $request)
     {
         $customer = auth()->guard('customer')->user();
 
         if (! $customer->addresses()->find($id)) {
-            session()->flash('warning', trans('shop::app.customers.account.addresses.security-warning'));
+            session()->flash('warning', trans('shop::app.customers.account.addresses.index.security-warning'));
 
             return redirect()->route('shop.customers.account.addresses.index');
         }
@@ -126,14 +123,15 @@ class AddressController extends Controller
             'phone',
             'email',
         ]), [
-            'address' => implode(PHP_EOL, array_filter($request->input('address'))),
+            'customer_id' => $customer->id,
+            'address'     => implode(PHP_EOL, array_filter($request->input('address'))),
         ]);
 
         $customerAddress = $this->customerAddressRepository->update($data, $id);
 
         Event::dispatch('customer.addresses.update.after', $customerAddress);
 
-        session()->flash('success', trans('shop::app.customers.account.addresses.edit-success'));
+        session()->flash('success', trans('shop::app.customers.account.addresses.index.edit-success'));
 
         return redirect()->route('shop.customers.account.addresses.index');
     }
@@ -144,18 +142,22 @@ class AddressController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function makeDefault($id)
+    public function makeDefault(int $id)
     {
         $customer = auth()->guard('customer')->user();
 
-        if ($default = $customer->default_address) {
-            $default->update(['default_address' => 0]);
+        $defaultAddress = $customer->addresses()->where('default_address', 1)->first();
+
+        $addressToSetDefault = $customer->addresses()->find($id);
+
+        if ($defaultAddress && $defaultAddress->id !== $id) {
+            $defaultAddress->update(['default_address' => 0]);
         }
 
-        if ($address = $customer->addresses()->find($id)) {
-            $address->update(['default_address' => 1]);
+        if ($addressToSetDefault) {
+            $addressToSetDefault->update(['default_address' => 1]);
         } else {
-            session()->flash('success', trans('shop::app.customers.account.addresses.default-delete'));
+            session()->flash('success', trans('shop::app.customers.account.addresses.index.default-delete'));
         }
 
         return redirect()->back();
@@ -164,10 +166,9 @@ class AddressController extends Controller
     /**
      * Delete address of the current customer.
      *
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $address = $this->customerAddressRepository->findOneWhere([
             'id'          => $id,
@@ -184,7 +185,7 @@ class AddressController extends Controller
 
         Event::dispatch('customer.addresses.delete.after', $id);
 
-        session()->flash('success', trans('shop::app.customers.account.addresses.delete-success'));
+        session()->flash('success', trans('shop::app.customers.account.addresses.index.delete-success'));
 
         return redirect()->route('shop.customers.account.addresses.index');
     }

@@ -10,14 +10,12 @@ use Webkul\Checkout\Models\CartItem;
 use Webkul\Customer\Repositories\CustomerRepository;
 use Webkul\Product\DataTypes\CartItemValidationResult;
 use Webkul\Product\Facades\ProductImage;
-use Webkul\Product\Models\ProductFlat;
 use Webkul\Product\Repositories\ProductAttributeValueRepository;
 use Webkul\Product\Repositories\ProductCustomerGroupPriceRepository;
 use Webkul\Product\Repositories\ProductImageRepository;
 use Webkul\Product\Repositories\ProductInventoryRepository;
 use Webkul\Product\Repositories\ProductRepository;
 use Webkul\Product\Repositories\ProductVideoRepository;
-use Webkul\Tax\Helpers\Tax;
 
 abstract class AbstractType
 {
@@ -64,6 +62,13 @@ abstract class AbstractType
     protected $canBeMovedFromWishlistToCart = true;
 
     /**
+     * Product can be added to cart with options or not.
+     *
+     * @var bool
+     */
+    protected $canBeAddedToCartWithoutOptions = true;
+
+    /**
      * Products of this type can be copied in the admin backend.
      *
      * @var bool
@@ -99,6 +104,13 @@ abstract class AbstractType
     protected $additionalViews = [];
 
     /**
+     * Attribute stored bu their code.
+     *
+     * @var array
+     */
+    protected $attributesByCode = [];
+
+    /**
      * Create a new product type instance.
      *
      * @return void
@@ -112,8 +124,7 @@ abstract class AbstractType
         protected ProductImageRepository $productImageRepository,
         protected ProductVideoRepository $productVideoRepository,
         protected ProductCustomerGroupPriceRepository $productCustomerGroupPriceRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Create product.
@@ -122,138 +133,44 @@ abstract class AbstractType
      */
     public function create(array $data)
     {
-        return $this->productRepository->getModel()->create($data);
+        $product = $this->productRepository->getModel()->create($data);
+
+        $product->channels()->sync(core()->getDefaultChannel()->id);
+
+        return $product;
     }
 
     /**
      * Update product.
      *
      * @param  int  $id
-     * @param  string  $attribute
+     * @param  array  $attributes
      * @return \Webkul\Product\Contracts\Product
      */
-    public function update(array $data, $id, $attribute = 'id')
+    public function update(array $data, $id, $attributes = [])
     {
         $product = $this->productRepository->find($id);
 
         $product->update($data);
 
-        $route = request()->route()?->getName();
+        /**
+         * If attributes are provided then only save the provided attributes and return.
+         */
+        if (! empty($attributes)) {
+            $attributes = $this->attributeRepository->findWhereIn('code', $attributes);
 
-        foreach ($product->attribute_family->custom_attributes as $attribute) {
-            if (
-                $attribute->type === 'boolean'
-                && $route !== 'admin.catalog.products.mass_update'
-            ) {
-                $data[$attribute->code] = ! empty($data[$attribute->code]);
-            }
+            $this->attributeValueRepository->saveValues($data, $product, $attributes);
 
-            if (
-                $attribute->type == 'multiselect'
-                || $attribute->type == 'checkbox'
-            ) {
-                $data[$attribute->code] = isset($data[$attribute->code]) ? implode(',', $data[$attribute->code]) : null;
-            }
-
-            if (! isset($data[$attribute->code])) {
-                continue;
-            }
-
-            if (
-                $attribute->type === 'price'
-                && empty($data[$attribute->code])
-            ) {
-                $data[$attribute->code] = null;
-            }
-
-            if (
-                $attribute->type === 'date'
-                && $data[$attribute->code] === ''
-                && $route !== 'admin.catalog.products.mass_update'
-            ) {
-                $data[$attribute->code] = null;
-            }
-
-            if (
-                $attribute->type === 'image'
-                || $attribute->type === 'file'
-            ) {
-                $data[$attribute->code] = gettype($data[$attribute->code]) === 'object'
-                    ? request()->file($attribute->code)->store('product/'.$product->id)
-                    : $data[$attribute->code];
-            }
-
-            $attributeValues = $product->attribute_values
-                ->where('attribute_id', $attribute->id);
-
-            if ($attribute->value_per_channel) {
-                if ($attribute->value_per_locale) {
-                    $attributeValues = $attributeValues
-                        ->where('channel', $attribute->value_per_channel ? $data['channel'] : null)
-                        ->where('locale', $attribute->value_per_locale ? $data['locale'] : null);
-                } else {
-                    $attributeValues = $attributeValues
-                        ->where('channel', $attribute->value_per_channel ? $data['channel'] : null);
-                }
-            } else {
-                if ($attribute->value_per_locale) {
-                    $attributeValues = $attributeValues
-                        ->where('locale', $attribute->value_per_locale ? $data['locale'] : null);
-                }
-            }
-
-            $attributeValue = $attributeValues->first();
-
-            if (! $attributeValue) {
-                $uniqueId = implode('|', array_filter([
-                    $data['channel'],
-                    $data['locale'],
-                    $product->id,
-                    $attribute->id,
-                ]));
-
-                $this->attributeValueRepository->create([
-                    'product_id'            => $product->id,
-                    'attribute_id'          => $attribute->id,
-                    $attribute->column_name => $data[$attribute->code],
-                    'channel'               => $attribute->value_per_channel ? $data['channel'] : null,
-                    'locale'                => $attribute->value_per_locale ? $data['locale'] : null,
-                    'unique_id'             => $uniqueId,
-                ]);
-            } else {
-                $previousTextValue = $attributeValue->text_value;
-
-                if (
-                    $attribute->type == 'image'
-                    || $attribute->type == 'file'
-                ) {
-                    /**
-                     * If $data[$attribute->code]['delete'] is not empty, that means someone selected the "delete" option.
-                     */
-                    if (! empty($data[$attribute->code]['delete'])) {
-                        Storage::delete($previousTextValue);
-
-                        $data[$attribute->code] = null;
-                    }
-                    /**
-                     * If $data[$attribute->code] is not equal to the previous one, that means someone has
-                     * updated the file or image. In that case, we will remove the previous file.
-                     */
-                    elseif (
-                        ! empty($previousTextValue)
-                        && $data[$attribute->code] != $previousTextValue
-                    ) {
-                        Storage::delete($previousTextValue);
-                    }
-                }
-
-                $attributeValue->update([$attribute->column_name => $data[$attribute->code]]);
-            }
-        }
-
-        if ($route == 'admin.catalog.products.mass_update') {
             return $product;
         }
+
+        $this->attributeValueRepository->saveValues($data, $product, $product->attribute_family->custom_attributes);
+
+        if (empty($data['channels'])) {
+            $data['channels'][] = core()->getDefaultChannel()->id;
+        }
+
+        $product->channels()->sync($data['channels']);
 
         if (! isset($data['categories'])) {
             $data['categories'] = [];
@@ -269,16 +186,26 @@ abstract class AbstractType
 
         $this->productInventoryRepository->saveInventories($data, $product);
 
-        $this->productImageRepository->uploadImages($data, $product);
+        $this->productImageRepository->upload($data, $product, 'images');
 
-        $this->productVideoRepository->uploadVideos($data, $product);
+        $this->productVideoRepository->upload($data, $product, 'videos');
 
-        $this->productCustomerGroupPriceRepository->saveCustomerGroupPrices(
-            $data,
-            $product
-        );
+        $this->productCustomerGroupPriceRepository->saveCustomerGroupPrices($data, $product);
 
         return $product;
+    }
+
+    /**
+     * @param  string  $code
+     * @return \Webkul\Attribute\Contracts\Attribute
+     */
+    public function getAttributeByCode($code)
+    {
+        if (! empty($this->attributesByCode[$code])) {
+            return $this->attributesByCode[$code];
+        }
+
+        return $this->attributesByCode[$code] = $this->attributeRepository->findOneByField('code', $code);
     }
 
     /**
@@ -314,10 +241,6 @@ abstract class AbstractType
      */
     protected function copyAttributeValues($product): void
     {
-        $productFlat = $this->product->product_flats->first()?->replicate() ?? new ProductFlat();
-
-        $productFlat->product_id = $product->id;
-
         $attributesToSkip = config('products.copy.skip_attributes') ?? [];
 
         $copyAttributes = [
@@ -348,13 +271,10 @@ abstract class AbstractType
 
             if (! is_null($value)) {
                 $newAttributeValue->{$attribute->column_name} = $value;
-                $productFlat->{$attribute->code} = $value;
             }
 
             $product->attribute_values()->save($newAttributeValue);
         }
-
-        $productFlat->save();
     }
 
     /**
@@ -367,6 +287,16 @@ abstract class AbstractType
     {
         $attributesToSkip = config('products.copy.skip_attributes') ?? [];
 
+        if (! in_array('flat', $attributesToSkip)) {
+            foreach ($this->product->product_flats as $productFlat) {
+                $product->product_flats()->save($productFlat->replicate());
+            }
+        }
+
+        if (! in_array('channels', $attributesToSkip)) {
+            $product->channels()->sync($this->product->channels->pluck('id'));
+        }
+
         if (! in_array('categories', $attributesToSkip)) {
             $product->categories()->sync($this->product->categories->pluck('id'));
         }
@@ -378,8 +308,14 @@ abstract class AbstractType
         }
 
         if (! in_array('customer_group_prices', $attributesToSkip)) {
-            foreach ($this->product->customer_group_prices as $customer_group_price) {
-                $product->customer_group_prices()->save($customer_group_price->replicate());
+            foreach ($this->product->customer_group_prices as $customerGroupPrice) {
+                $product->customer_group_prices()->save($customerGroupPrice->replicate()->fill([
+                    'unique_id' => implode('|', array_filter([
+                        $customerGroupPrice->qty,
+                        $product->id,
+                        $customerGroupPrice->customer_group_id,
+                    ])),
+                ]));
             }
         }
 
@@ -577,6 +513,16 @@ abstract class AbstractType
     }
 
     /**
+     * Return true if product can be added to cart without options.
+     *
+     * @return bool
+     */
+    public function canBeAddedToCartWithoutOptions()
+    {
+        return $this->canBeAddedToCartWithoutOptions;
+    }
+
+    /**
      * Retrieve product attributes.
      *
      * @param  \Webkul\Attribute\Contracts\Group  $group
@@ -761,12 +707,12 @@ abstract class AbstractType
     {
         return [
             'regular' => [
-                'price'           => core()->convertPrice($regularPrice = $this->evaluatePrice($this->product->price)),
-                'formatted_price' => core()->currency($regularPrice),
+                'price'           => core()->convertPrice($this->product->price),
+                'formatted_price' => core()->currency($this->product->price),
             ],
 
             'final'   => [
-                'price'           => core()->convertPrice($minimalPrice = $this->evaluatePrice($this->getMinimalPrice())),
+                'price'           => core()->convertPrice($minimalPrice = $this->getMinimalPrice()),
                 'formatted_price' => core()->currency($minimalPrice),
             ],
         ];
@@ -786,56 +732,15 @@ abstract class AbstractType
     }
 
     /**
-     * Get inclusive tax rates.
-     *
-     * @param  float  $totalPrice
-     * @return float
-     */
-    public function getTaxInclusiveRate($totalPrice)
-    {
-        if (! $taxCategory = $this->getTaxCategory()) {
-            return $totalPrice;
-        }
-
-        if (auth()->guard('customer')->check()) {
-            $address = auth()->guard('customer')->user()->addresses->where('default_address', 1)->first();
-        } else {
-            $address = Tax::getDefaultAddress();
-        }
-
-        Tax::isTaxApplicableInCurrentAddress($taxCategory, $address, function ($rate) use (&$totalPrice) {
-            $totalPrice = round($totalPrice, 4) + round(($totalPrice * $rate->tax_rate) / 100, 4);
-        });
-
-        return $totalPrice;
-    }
-
-    /**
      * Get tax category.
      *
      * @return \Webkul\Tax\Models\TaxCategory
      */
     public function getTaxCategory()
     {
-        $taxCategoryId = $this->product->parent
-            ? $this->product->parent->tax_category_id
-            : $this->product->tax_category_id;
+        $taxCategoryId = $this->product->parent?->tax_category_id ?? $this->product->tax_category_id;
 
         return core()->getTaxCategoryById($taxCategoryId);
-    }
-
-    /**
-     * Evaluate price.
-     *
-     * @return array
-     */
-    public function evaluatePrice($price)
-    {
-        $roundedOffPrice = round($price, 2);
-
-        return Tax::isTaxInclusive()
-            ? $this->getTaxInclusiveRate($roundedOffPrice)
-            : $roundedOffPrice;
     }
 
     /**
@@ -858,19 +763,23 @@ abstract class AbstractType
 
         $products = [
             [
-                'product_id'        => $this->product->id,
-                'sku'               => $this->product->sku,
-                'quantity'          => $data['quantity'],
-                'name'              => $this->product->name,
-                'price'             => $convertedPrice = core()->convertPrice($price),
-                'base_price'        => $price,
-                'total'             => $convertedPrice * $data['quantity'],
-                'base_total'        => $price * $data['quantity'],
-                'weight'            => $this->product->weight ?? 0,
-                'total_weight'      => ($this->product->weight ?? 0) * $data['quantity'],
-                'base_total_weight' => ($this->product->weight ?? 0) * $data['quantity'],
-                'type'              => $this->product->type,
-                'additional'        => $this->getAdditionalOptions($data),
+                'product_id'          => $this->product->id,
+                'sku'                 => $this->product->sku,
+                'quantity'            => $data['quantity'],
+                'name'                => $this->product->name,
+                'price'               => $convertedPrice = core()->convertPrice($price),
+                'price_incl_tax'      => $convertedPrice,
+                'base_price'          => $price,
+                'base_price_incl_tax' => $price,
+                'total'               => $convertedPrice * $data['quantity'],
+                'total_incl_tax'      => $convertedPrice * $data['quantity'],
+                'base_total'          => $price * $data['quantity'],
+                'base_total_incl_tax' => $price * $data['quantity'],
+                'weight'              => $this->product->weight ?? 0,
+                'total_weight'        => ($this->product->weight ?? 0) * $data['quantity'],
+                'base_total_weight'   => ($this->product->weight ?? 0) * $data['quantity'],
+                'type'                => $this->product->type,
+                'additional'          => $this->getAdditionalOptions($data),
             ],
         ];
 
@@ -971,29 +880,35 @@ abstract class AbstractType
      */
     public function validateCartItem(CartItem $item): CartItemValidationResult
     {
-        $result = new CartItemValidationResult();
+        $validation = new CartItemValidationResult();
 
         if ($this->isCartItemInactive($item)) {
-            $result->itemIsInactive();
+            $validation->itemIsInactive();
 
-            return $result;
+            return $validation;
         }
 
-        $price = round($this->getFinalPrice($item->quantity), 4);
+        $basePrice = round($this->getFinalPrice($item->quantity), 4);
 
-        if ($price == $item->base_price) {
-            return $result;
+        if ($basePrice == $item->base_price_incl_tax) {
+            return $validation;
         }
 
-        $item->base_price = $price;
-        $item->price = core()->convertPrice($price);
+        $item->base_price = $basePrice;
+        $item->base_price_incl_tax = $basePrice;
 
-        $item->base_total = $price * $item->quantity;
-        $item->total = core()->convertPrice($price * $item->quantity);
+        $item->price = ($price = core()->convertPrice($basePrice));
+        $item->price_incl_tax = $price;
+
+        $item->base_total = $basePrice * $item->quantity;
+        $item->base_total_incl_tax = $basePrice * $item->quantity;
+
+        $item->total = ($total = core()->convertPrice($basePrice * $item->quantity));
+        $item->total_incl_tax = $total;
 
         $item->save();
 
-        return $result;
+        return $validation;
     }
 
     /**

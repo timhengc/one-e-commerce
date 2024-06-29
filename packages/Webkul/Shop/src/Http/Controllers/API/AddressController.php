@@ -15,9 +15,7 @@ class AddressController extends APIController
      *
      * @return void
      */
-    public function __construct(protected CustomerAddressRepository $customerAddressRepository)
-    {
-    }
+    public function __construct(protected CustomerAddressRepository $customerAddressRepository) {}
 
     /**
      * Customer addresses.
@@ -62,7 +60,7 @@ class AddressController extends APIController
 
         return new JsonResource([
             'data'    => new AddressResource($customerAddress),
-            'message' => trans('shop::app.customers.account.addresses.create-success'),
+            'message' => trans('shop::app.customers.account.addresses.index.create-success'),
         ]);
     }
 
@@ -89,15 +87,15 @@ class AddressController extends APIController
             'default_address',
             'email',
         ]), [
-            'customer_id'     => $customer->id,
-            'address'         => implode(PHP_EOL, array_filter(request()->input('address'))),
+            'customer_id' => $customer->id,
+            'address'     => implode(PHP_EOL, array_filter(request()->input('address'))),
         ]), request('id'));
 
         Event::dispatch('customer.addresses.update.after', $customerAddress);
 
         return new JsonResource([
             'data'    => new AddressResource($customerAddress),
-            'message' => trans('shop::app.customers.account.addresses.create-success'),
+            'message' => trans('shop::app.customers.account.addresses.index.update-success'),
         ]);
     }
 }

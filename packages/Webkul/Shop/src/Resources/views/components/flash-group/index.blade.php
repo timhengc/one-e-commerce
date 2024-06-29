@@ -9,12 +9,26 @@
             tag='div'
             name="flash-group"
             enter-from-class="ltr:translate-x-full rtl:-translate-x-full"
-            enter-active-class="transform transition ease-in-out duration-200"
+            enter-active-class="transform transition duration-200 ease-in-out"
             enter-to-class="ltr:translate-x-0 rtl:-translate-x-0"
             leave-from-class="ltr:translate-x-0 rtl:-translate-x-0"
-            leave-active-class="transform transition ease-in-out duration-200"
+            leave-active-class="transform transition duration-200 ease-in-out"
             leave-to-class="ltr:translate-x-full rtl:-translate-x-full"
-            class='grid gap-2.5 fixed z-[1001] top-5 ltr:right-5 rtl:left-5 justify-items-end'
+            class='fixed top-5 z-[1001] grid justify-items-end gap-2.5 max-sm:hidden ltr:right-5 rtl:left-5'
+        >
+            <x-shop::flash-group.item />
+        </transition-group>
+
+        <transition-group
+            tag='div'
+            name="flash-group"
+            enter-from-class="ltr:translate-y-full rtl:-translate-y-full"
+            enter-active-class="transform transition duration-200 ease-in-out"
+            enter-to-class="ltr:translate-y-0 rtl:-translate-y-0"
+            leave-from-class="ltr:translate-y-0 rtl:-translate-y-0"
+            leave-active-class="transform transition duration-200 ease-in-out"
+            leave-to-class="ltr:translate-y-full rtl:-translate-y-full"
+            class='fixed bottom-10 left-1/2 z-[1001] grid -translate-x-1/2 -translate-y-1/2 transform justify-items-center gap-2.5 sm:hidden'
         >
             <x-shop::flash-group.item />
         </transition-group>

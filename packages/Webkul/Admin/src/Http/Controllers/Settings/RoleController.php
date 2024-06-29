@@ -19,8 +19,7 @@ class RoleController extends Controller
     public function __construct(
         protected RoleRepository $roleRepository,
         protected AdminRepository $adminRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -30,7 +29,7 @@ class RoleController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(RolesDataGrid::class)->toJson();
+            return datagrid(RolesDataGrid::class)->process();
         }
 
         return view('admin::settings.roles.index');

@@ -18,9 +18,7 @@ class LoginController extends Controller
      *
      * @return void
      */
-    public function __construct(protected CustomerSocialAccountRepository $customerSocialAccountRepository)
-    {
-    }
+    public function __construct(protected CustomerSocialAccountRepository $customerSocialAccountRepository) {}
 
     /**
      * Redirects to the social provider
@@ -57,9 +55,8 @@ class LoginController extends Controller
 
         auth()->guard('customer')->login($customer, true);
 
-        // Event passed to prepare cart after login
-        Event::dispatch('customer.after.login', $customer->email);
+        Event::dispatch('customer.after.login', $customer);
 
-        return redirect()->intended('shop.customers.account.profile.index');
+        return redirect()->intended(route('shop.customers.account.profile.index'));
     }
 }

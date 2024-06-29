@@ -17,9 +17,7 @@ class ReviewController extends Controller
      *
      * @return void
      */
-    public function __construct(protected ProductReviewRepository $productReviewRepository)
-    {
-    }
+    public function __construct(protected ProductReviewRepository $productReviewRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -29,7 +27,7 @@ class ReviewController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(ReviewDataGrid::class)->toJson();
+            return datagrid(ReviewDataGrid::class)->process();
         }
 
         return view('admin::customers.reviews.index');

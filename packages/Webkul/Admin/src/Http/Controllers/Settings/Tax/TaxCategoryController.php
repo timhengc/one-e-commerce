@@ -20,8 +20,7 @@ class TaxCategoryController extends Controller
     public function __construct(
         protected TaxCategoryRepository $taxCategoryRepository,
         protected TaxRateRepository $taxRateRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -31,7 +30,7 @@ class TaxCategoryController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(TaxCategoryDataGrid::class)->toJson();
+            return datagrid(TaxCategoryDataGrid::class)->process();
         }
 
         return view('admin::settings.taxes.categories.index')->with('taxRates', $this->taxRateRepository->all());

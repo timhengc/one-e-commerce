@@ -13,7 +13,7 @@
     <meta name="keywords" content="{{ $title }}"/>
 @endPush
 
-<x-shop::layouts>
+<x-shop::layouts :has-feature="false">
     <!-- Page Title -->
     <x-slot:title>
         {{ $title }}
@@ -24,9 +24,11 @@
             @include('shop::search.images.results')
         @endif
 
-        <div class="flex justify-between items-center mt-8">
-            <h1 class="text-2xl font-medium">
-                {{ $title }}
+        <div class="mt-8 flex items-center justify-between max-md:mt-5">
+            <h1 
+                class="text-2xl font-medium max-sm:text-base" 
+                v-text="'{{ $title }}'"
+            >    
             </h1>
         </div>
     </div>
@@ -42,7 +44,7 @@
             id="v-search-template"
         >
             <div class="container px-[60px] max-lg:px-8 max-sm:px-4">
-                <div class="flex gap-10 items-start md:mt-10 max-lg:gap-5">
+                <div class="flex items-start gap-10 max-lg:gap-5 md:mt-10">
                     <!-- Product Listing Filters -->
                     @include('shop::categories.filters')
 
@@ -55,7 +57,7 @@
 
                         <!-- Product List Card Container -->
                         <div
-                            class="grid grid-cols-1 gap-6 mt-8"
+                            class="mt-8 grid grid-cols-1 gap-6"
                             v-if="filters.toolbar.mode === 'list'"
                         >
                             <!-- Product Card Shimmer Effect -->
@@ -74,10 +76,17 @@
 
                                 <!-- Empty Products Container -->
                                 <template v-else>
-                                    <div class="grid items-center justify-items-center place-content-center w-full m-auto h-[476px] text-center">
-                                        <img src="{{ bagisto_asset('images/thank-you.png') }}"/>
+                                    <div class="m-auto grid w-full place-content-center items-center justify-items-center py-32 text-center">
+                                        <img
+                                            class="max-sm:h-[100px] max-sm:w-[100px]"
+                                            src="{{ bagisto_asset('images/thank-you.png') }}"
+                                            alt="Empty result"
+                                        />
                                   
-                                        <p class="text-xl">
+                                        <p
+                                            class="text-xl max-sm:text-sm"
+                                            role="heading"
+                                        >
                                             @lang('shop::app.categories.view.empty')
                                         </p>
                                     </div>
@@ -89,7 +98,7 @@
                         <div v-else>
                             <!-- Product Card Shimmer Effect -->
                             <template v-if="isLoading">
-                                <div class="grid grid-cols-3 gap-8 mt-8 max-sm:mt-5 max-1060:grid-cols-2 max-sm:justify-items-center max-sm:gap-4">
+                                <div class="mt-8 grid grid-cols-3 gap-8 max-1060:grid-cols-2 max-md:gap-x-4 max-sm:mt-5 max-sm:justify-items-center max-sm:gap-y-5">
                                     <x-shop::shimmer.products.cards.grid count="12" />
                                 </div>
                             </template>
@@ -97,20 +106,28 @@
                             <!-- Product Card Listing -->
                             <template v-else>
                                 <template v-if="products.length">
-                                    <div class="grid grid-cols-3 gap-8 mt-8 max-sm:mt-5 max-1060:grid-cols-2 max-sm:justify-items-center max-sm:gap-4">
+                                    <div class="mt-8 grid grid-cols-3 gap-8 max-1060:grid-cols-2 max-md:mt-5 max-md:justify-items-center max-md:gap-x-4 max-md:gap-y-5">
                                         <x-shop::products.card
                                             ::mode="'grid'"
                                             v-for="product in products"
+                                            :navigation-link="route('shop.search.index')"
                                         />
                                     </div>
                                 </template>
 
                                 <!-- Empty Products Container -->
                                 <template v-else>
-                                    <div class="grid items-center justify-items-center place-content-center w-full m-auto h-[476px] text-center">
-                                        <img src="{{ bagisto_asset('images/thank-you.png') }}"/>
-                                        
-                                        <p class="text-xl">
+                                    <div class="m-auto grid w-full place-content-center items-center justify-items-center py-32 text-center">
+                                        <img
+                                            class="max-sm:h-[100px] max-sm:w-[100px]"
+                                            src="{{ bagisto_asset('images/thank-you.png') }}"
+                                            alt="Empty result"
+                                        />
+
+                                        <p
+                                            class="text-xl max-sm:text-sm"
+                                            role="heading"
+                                        >
                                             @lang('shop::app.categories.view.empty')
                                         </p>
                                     </div>
@@ -120,7 +137,7 @@
 
                         <!-- Load More Button -->
                         <button
-                            class="secondary-button block mx-auto w-max py-3 mt-[60px] px-11 rounded-2xl text-base text-center"
+                            class="secondary-button mx-auto mt-[60px] block w-max rounded-2xl px-11 py-3 text-center text-base max-md:rounded-lg max-md:text-sm max-sm:mt-7 max-sm:px-7 max-sm:py-2"
                             @click="loadMoreProducts"
                             v-if="links.next"
                         >

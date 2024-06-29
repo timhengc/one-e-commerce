@@ -19,8 +19,7 @@ class WishlistController extends APIController
     public function __construct(
         protected WishlistRepository $wishlistRepository,
         protected ProductRepository $productRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Displays the listing resources if the customer has items on the wishlist.
@@ -132,7 +131,16 @@ class WishlistController extends APIController
      */
     public function destroy($id): JsonResource
     {
-        $this->wishlistRepository->delete($id);
+        $success = $this->wishlistRepository->deleteWhere([
+            'id'          => $id,
+            'customer_id' => auth()->guard('customer')->user()->id,
+        ]);
+
+        if (! $success) {
+            return new JsonResource([
+                'message' => trans('shop::app.customers.account.wishlist.remove-fail'),
+            ]);
+        }
 
         return new JsonResource([
             'data'    => WishlistResource::collection($this->wishlistRepository->get()),

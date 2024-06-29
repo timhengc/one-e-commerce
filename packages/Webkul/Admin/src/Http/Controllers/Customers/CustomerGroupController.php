@@ -16,9 +16,7 @@ class CustomerGroupController extends Controller
      *
      * @return void
      */
-    public function __construct(protected CustomerGroupRepository $customerGroupRepository)
-    {
-    }
+    public function __construct(protected CustomerGroupRepository $customerGroupRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -28,7 +26,7 @@ class CustomerGroupController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(GroupDataGrid::class)->toJson();
+            return datagrid(GroupDataGrid::class)->process();
         }
 
         return view('admin::customers.groups.index');

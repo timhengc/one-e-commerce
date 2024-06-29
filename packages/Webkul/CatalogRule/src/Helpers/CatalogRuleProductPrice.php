@@ -10,14 +10,12 @@ class CatalogRuleProductPrice
     /**
      * Create a new helper instance.
      *
-     * @param  \Webkul\Attribute\Repositories\CatalogRuleProductPriceRepository  $catalogRuleProductPriceRepository
      * @return void
      */
     public function __construct(
         protected CatalogRuleProductPriceRepository $catalogRuleProductPriceRepository,
         protected CatalogRuleProduct $catalogRuleProductHelper
-    ) {
-    }
+    ) {}
 
     /**
      * Collect discount on cart

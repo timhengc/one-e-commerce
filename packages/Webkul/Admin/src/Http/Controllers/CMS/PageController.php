@@ -16,9 +16,7 @@ class PageController extends Controller
      *
      * @return void
      */
-    public function __construct(protected PageRepository $pageRepository)
-    {
-    }
+    public function __construct(protected PageRepository $pageRepository) {}
 
     /**
      * Loads the index page showing the static pages resources.
@@ -28,7 +26,7 @@ class PageController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(CMSPageDataGrid::class)->toJson();
+            return datagrid(CMSPageDataGrid::class)->process();
         }
 
         return view('admin::cms.index');

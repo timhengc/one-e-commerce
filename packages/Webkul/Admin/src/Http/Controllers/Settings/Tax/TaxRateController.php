@@ -15,9 +15,7 @@ class TaxRateController extends Controller
      *
      * @return void
      */
-    public function __construct(protected TaxRateRepository $taxRateRepository)
-    {
-    }
+    public function __construct(protected TaxRateRepository $taxRateRepository) {}
 
     /**
      * Display a listing resource for the available tax rates.
@@ -27,7 +25,7 @@ class TaxRateController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(TaxRateDataGrid::class)->toJson();
+            return datagrid(TaxRateDataGrid::class)->process();
         }
 
         return view('admin::settings.taxes.rates.index');
@@ -41,7 +39,7 @@ class TaxRateController extends Controller
     public function show()
     {
         if (request()->ajax()) {
-            return app(TaxRateDataGrid::class)->toJson();
+            return datagrid(TaxRateDataGrid::class)->process();
         }
 
         return view('admin::settings.taxes.rates.create');

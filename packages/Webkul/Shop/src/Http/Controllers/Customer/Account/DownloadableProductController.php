@@ -14,9 +14,7 @@ class DownloadableProductController extends Controller
      *
      * @return void
      */
-    public function __construct(protected DownloadableLinkPurchasedRepository $downloadableLinkPurchasedRepository)
-    {
-    }
+    public function __construct(protected DownloadableLinkPurchasedRepository $downloadableLinkPurchasedRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -26,7 +24,7 @@ class DownloadableProductController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(DownloadableProductDataGrid::class)->toJson();
+            return datagrid(DownloadableProductDataGrid::class)->process();
         }
 
         return view('shop::customers.account.downloadable_products.index');

@@ -23,8 +23,7 @@ class CustomerController extends Controller
         protected CustomerRepository $customerRepository,
         protected ProductReviewRepository $productReviewRepository,
         protected SubscribersListRepository $subscriptionRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Taking the customer to profile details page.
@@ -80,7 +79,7 @@ class CustomerController extends Controller
 
                 $data['password'] = bcrypt($data['new_password']);
             } else {
-                session()->flash('warning', trans('shop::app.customers.account.profile.unmatch'));
+                session()->flash('warning', trans('shop::app.customers.account.profile.index.unmatched'));
 
                 return redirect()->back();
             }
@@ -139,7 +138,7 @@ class CustomerController extends Controller
                 }
             }
 
-            session()->flash('success', trans('shop::app.customers.account.profile.edit-success'));
+            session()->flash('success', trans('shop::app.customers.account.profile.index.edit-success'));
 
             return redirect()->route('shop.customers.account.profile.index');
         }
@@ -166,23 +165,23 @@ class CustomerController extends Controller
         try {
             if (Hash::check(request()->input('password'), $customerRepository->password)) {
                 if ($customerRepository->orders->whereIn('status', [Order::STATUS_PENDING, Order::STATUS_PROCESSING])->first()) {
-                    session()->flash('error', trans('shop::app.customers.account.profile.order-pending'));
+                    session()->flash('error', trans('shop::app.customers.account.profile.index.order-pending'));
 
                     return redirect()->route('shop.customers.account.profile.index');
                 }
 
                 $this->customerRepository->delete(auth()->guard('customer')->user()->id);
 
-                session()->flash('success', trans('shop::app.customers.account.profile.delete-success'));
+                session()->flash('success', trans('shop::app.customers.account.profile.index.delete-success'));
 
                 return redirect()->route('shop.customer.session.index');
             }
 
-            session()->flash('error', trans('shop::app.customers.account.profile.wrong-password'));
+            session()->flash('error', trans('shop::app.customers.account.profile.index.wrong-password'));
 
             return redirect()->back();
         } catch (\Exception $e) {
-            session()->flash('error', trans('shop::app.customers.account.profile.delete-failed'));
+            session()->flash('error', trans('shop::app.customers.account.profile.index.delete-failed'));
 
             return redirect()->route('shop.customers.account.profile.index');
         }
@@ -198,5 +197,15 @@ class CustomerController extends Controller
         $reviews = $this->productReviewRepository->getCustomerReview();
 
         return view('shop::customers.account.reviews.index', compact('reviews'));
+    }
+
+    /**
+     * Taking the customer to account details page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function account()
+    {
+        return view('shop::customers.account.index');
     }
 }

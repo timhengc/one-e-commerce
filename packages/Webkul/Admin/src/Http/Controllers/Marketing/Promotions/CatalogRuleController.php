@@ -16,9 +16,7 @@ class CatalogRuleController extends Controller
      *
      * @return void
      */
-    public function __construct(protected CatalogRuleRepository $catalogRuleRepository)
-    {
-    }
+    public function __construct(protected CatalogRuleRepository $catalogRuleRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -28,7 +26,7 @@ class CatalogRuleController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(CatalogRuleDataGrid::class)->toJson();
+            return datagrid(CatalogRuleDataGrid::class)->process();
         }
 
         return view('admin::marketing.promotions.catalog-rules.index');

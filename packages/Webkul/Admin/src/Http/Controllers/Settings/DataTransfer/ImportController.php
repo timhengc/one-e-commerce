@@ -20,8 +20,7 @@ class ImportController extends Controller
     public function __construct(
         protected ImportRepository $importRepository,
         protected Import $importHelper
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -31,7 +30,7 @@ class ImportController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(ImportDataGrid::class)->toJson();
+            return datagrid(ImportDataGrid::class)->process();
         }
 
         return view('admin::settings.data-transfer.imports.index');

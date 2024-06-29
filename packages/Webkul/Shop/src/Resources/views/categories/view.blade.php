@@ -1,8 +1,14 @@
 <!-- SEO Meta Content -->
 @push('meta')
-    <meta name="description" content="{{ trim($category->meta_description) != "" ? $category->meta_description : \Illuminate\Support\Str::limit(strip_tags($category->description), 120, '') }}"/>
+    <meta 
+        name="description" 
+        content="{{ trim($category->meta_description) != "" ? $category->meta_description : \Illuminate\Support\Str::limit(strip_tags($category->description), 120, '') }}"
+    />
 
-    <meta name="keywords" content="{{ $category->meta_keywords }}"/>
+    <meta 
+        name="keywords" 
+        content="{{ $category->meta_keywords }}"
+    />
 
     @if (core()->getConfigData('catalog.rich_snippets.categories.enable'))
         <script type="application/ld+json">
@@ -21,10 +27,10 @@
 
     <!-- Hero Image -->
     @if ($category->banner_path)
-        <div class="container mt-8 px-[60px] max-lg:px-8 max-sm:px-4">
+        <div class="container mt-8 px-[60px] max-lg:px-8 max-md:mt-4 max-md:px-4">
             <div>
                 <img
-                    class="rounded-xl"
+                    class="aspect-[4/1] max-h-full max-w-full rounded-xl"
                     src="{{ $category->banner_url }}"
                     alt="{{ $category->name }}"
                     width="1320"
@@ -40,7 +46,7 @@
 
     @if (in_array($category->display_mode, [null, 'description_only', 'products_and_description']))
         @if ($category->description)
-            <div class="container mt-8 px-[60px] max-lg:px-8 max-sm:px-4">
+            <div class="container mt-[34px] px-[60px] max-lg:px-8 max-md:mt-4 max-md:px-4 max-md:text-sm max-sm:text-xs">
                 {!! $category->description !!}
             </div>
         @endif
@@ -61,8 +67,8 @@
             type="text/x-template" 
             id="v-category-template"
         >
-            <div class="container px-[60px] max-lg:px-8 max-sm:px-4">
-                <div class="flex gap-10 items-start md:mt-10 max-lg:gap-5">
+            <div class="container px-[60px] max-lg:px-8 max-md:px-4">
+                <div class="flex items-start gap-10 max-lg:gap-5 md:mt-10">
                     <!-- Product Listing Filters -->
                     @include('shop::categories.filters')
 
@@ -75,7 +81,7 @@
 
                         <!-- Product List Card Container -->
                         <div
-                            class="grid grid-cols-1 gap-6 mt-8"
+                            class="mt-8 grid grid-cols-1 gap-6"
                             v-if="filters.toolbar.mode === 'list'"
                         >
                             <!-- Product Card Shimmer Effect -->
@@ -96,14 +102,15 @@
 
                                 <!-- Empty Products Container -->
                                 <template v-else>
-                                    <div class="grid items-center justify-items-center place-content-center w-full m-auto h-[476px] text-center">
-                                        <img 
+                                    <div class="m-auto grid w-full place-content-center items-center justify-items-center py-32 text-center">
+                                        <img
+                                            class="max-md:h-[100px] max-md:w-[100px]"
                                             src="{{ bagisto_asset('images/thank-you.png') }}"
                                             alt="@lang('shop::app.categories.view.empty')"
                                         />
                                   
                                         <p
-                                            class="text-xl"
+                                            class="text-xl max-md:text-sm"
                                             role="heading"
                                         >
                                             @lang('shop::app.categories.view.empty')
@@ -116,10 +123,10 @@
                         </div>
 
                         <!-- Product Grid Card Container -->
-                        <div v-else class="mt-8">
+                        <div v-else class="mt-8 max-md:mt-5">
                             <!-- Product Card Shimmer Effect -->
                             <template v-if="isLoading">
-                                <div class="grid grid-cols-3 gap-8 max-1060:grid-cols-2 max-sm:justify-items-center max-sm:gap-4">
+                                <div class="grid grid-cols-3 gap-8 max-1060:grid-cols-2 max-md:justify-items-center max-md:gap-x-4">
                                     <x-shop::shimmer.products.cards.grid count="12" />
                                 </div>
                             </template>
@@ -129,7 +136,7 @@
                             <!-- Product Card Listing -->
                             <template v-else>
                                 <template v-if="products.length">
-                                    <div class="grid grid-cols-3 gap-8 max-1060:grid-cols-2 max-sm:justify-items-center max-sm:gap-4">
+                                    <div class="grid grid-cols-3 gap-8 max-1060:grid-cols-2 max-md:justify-items-center max-md:gap-x-4">
                                         <x-shop::products.card
                                             ::mode="'grid'"
                                             v-for="product in products"
@@ -139,14 +146,15 @@
 
                                 <!-- Empty Products Container -->
                                 <template v-else>
-                                    <div class="grid items-center justify-items-center place-content-center w-full m-auto h-[476px] text-center">
-                                        <img 
+                                    <div class="m-auto grid w-full place-content-center items-center justify-items-center py-32 text-center">
+                                        <img
+                                            class="max-md:h-[100px] max-md:w-[100px]"
                                             src="{{ bagisto_asset('images/thank-you.png') }}"
                                             alt="@lang('shop::app.categories.view.empty')"
                                         />
                                         
                                         <p
-                                            class="text-xl"
+                                            class="text-xl max-md:text-sm"
                                             role="heading"
                                         >
                                             @lang('shop::app.categories.view.empty')
@@ -162,7 +170,7 @@
 
                         <!-- Load More Button -->
                         <button
-                            class="secondary-button block mx-auto w-max py-3 mt-14 px-11 rounded-2xl text-base text-center"
+                            class="secondary-button mx-auto mt-14 block w-max rounded-2xl px-11 py-3 text-center text-base max-md:rounded-lg max-sm:mt-6 max-sm:px-6 max-sm:py-1.5 max-sm:text-sm"
                             @click="loadMoreProducts"
                             v-if="links.next && ! loader"
                         >
@@ -171,11 +179,11 @@
 
                         <button
                             v-else-if="links.next"
-                            class="secondary-button block w-max mx-auto py-3.5 mt-14 px-[74.5px] rounded-2xl text-base text-center"
+                            class="secondary-button mx-auto mt-14 block w-max rounded-2xl px-[74.5px] py-3.5 text-center text-base max-md:rounded-lg max-md:py-3 max-sm:mt-6 max-sm:px-[50.8px] max-sm:py-1.5"
                         >
                             <!-- Spinner -->
                             <img
-                                class="animate-spin h-5 w-5 text-navyBlue"
+                                class="h-5 w-5 animate-spin text-navyBlue"
                                 src="{{ bagisto_asset('images/spinner.svg') }}"
                                 alt="Loading"
                             />

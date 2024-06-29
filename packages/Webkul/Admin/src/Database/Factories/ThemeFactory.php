@@ -25,9 +25,10 @@ class ThemeFactory extends Factory
 
         return [
             'type'       => $this->faker->randomElement($types),
-            'name'       => $this->faker->name,
+            'name'       => preg_replace('/[^a-zA-Z ]/', '', $this->faker->name()),
             'sort_order' => ($lastTheme ? $lastTheme->id : 0) + 1,
             'channel_id' => core()->getCurrentChannel()->id,
+            'theme_code' => core()->getCurrentChannel()->theme,
         ];
     }
 }

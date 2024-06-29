@@ -21,8 +21,7 @@ class AttributeController extends Controller
     public function __construct(
         protected AttributeRepository $attributeRepository,
         protected ProductRepository $productRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -32,7 +31,7 @@ class AttributeController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(AttributeDataGrid::class)->toJson();
+            return datagrid(AttributeDataGrid::class)->process();
         }
 
         return view('admin::catalog.attributes.index');
@@ -45,7 +44,9 @@ class AttributeController extends Controller
      */
     public function create()
     {
-        return view('admin::catalog.attributes.create');
+        $locales = core()->getAllLocales();
+
+        return view('admin::catalog.attributes.create', compact('locales'));
     }
 
     /**
@@ -86,7 +87,9 @@ class AttributeController extends Controller
     {
         $attribute = $this->attributeRepository->findOrFail($id);
 
-        return view('admin::catalog.attributes.edit', compact('attribute'));
+        $locales = core()->getAllLocales();
+
+        return view('admin::catalog.attributes.edit', compact('attribute', 'locales'));
     }
 
     /**

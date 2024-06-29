@@ -12,9 +12,9 @@ use Webkul\Admin\Http\Requests\MassDestroyRequest;
 use Webkul\Admin\Http\Requests\MassUpdateRequest;
 use Webkul\Admin\Http\Requests\ProductForm;
 use Webkul\Admin\Http\Resources\AttributeResource;
+use Webkul\Admin\Http\Resources\ProductResource;
 use Webkul\Attribute\Repositories\AttributeFamilyRepository;
 use Webkul\Core\Rules\Slug;
-use Webkul\Inventory\Repositories\InventorySourceRepository;
 use Webkul\Product\Helpers\ProductType;
 use Webkul\Product\Repositories\ProductAttributeValueRepository;
 use Webkul\Product\Repositories\ProductDownloadableLinkRepository;
@@ -36,14 +36,12 @@ class ProductController extends Controller
      */
     public function __construct(
         protected AttributeFamilyRepository $attributeFamilyRepository,
-        protected InventorySourceRepository $inventorySourceRepository,
         protected ProductAttributeValueRepository $productAttributeValueRepository,
         protected ProductDownloadableLinkRepository $productDownloadableLinkRepository,
         protected ProductDownloadableSampleRepository $productDownloadableSampleRepository,
         protected ProductInventoryRepository $productInventoryRepository,
         protected ProductRepository $productRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -53,7 +51,7 @@ class ProductController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(ProductDataGrid::class)->toJson();
+            return datagrid(ProductDataGrid::class)->process();
         }
 
         $families = $this->attributeFamilyRepository->all();
@@ -138,9 +136,7 @@ class ProductController extends Controller
     {
         $product = $this->productRepository->findOrFail($id);
 
-        $inventorySources = $this->inventorySourceRepository->findWhere(['status' => self::ACTIVE_STATUS]);
-
-        return view('admin::catalog.products.edit', compact('product', 'inventorySources'));
+        return view('admin::catalog.products.edit', compact('product'));
     }
 
     /**
@@ -202,7 +198,11 @@ class ProductController extends Controller
     public function copy(int $id)
     {
         try {
+            Event::dispatch('catalog.product.create.before');
+
             $product = $this->productRepository->copy($id);
+
+            Event::dispatch('catalog.product.create.after', $product);
         } catch (\Exception $e) {
             session()->flash('error', $e->getMessage());
 
@@ -285,16 +285,14 @@ class ProductController extends Controller
      */
     public function massUpdate(MassUpdateRequest $massUpdateRequest): JsonResponse
     {
-        $data = $massUpdateRequest->all();
-
-        $productIds = $data['indices'];
+        $productIds = $massUpdateRequest->input('indices');
 
         foreach ($productIds as $productId) {
             Event::dispatch('catalog.product.update.before', $productId);
 
             $product = $this->productRepository->update([
                 'status'  => $massUpdateRequest->input('value'),
-            ], $productId);
+            ], $productId, ['status']);
 
             Event::dispatch('catalog.product.update.after', $product);
         }
@@ -325,31 +323,29 @@ class ProductController extends Controller
     {
         $results = [];
 
-        request()->query->add([
-            'status'               => null,
-            'visible_individually' => null,
-            'name'                 => request('query'),
-            'sort'                 => 'created_at',
-            'order'                => 'desc',
-        ]);
+        $searchEngine = 'database';
 
-        $products = $this->productRepository->searchFromDatabase();
+        if (
+            core()->getConfigData('catalog.products.search.engine') == 'elastic'
+            && core()->getConfigData('catalog.products.search.admin_mode') == 'elastic'
+        ) {
+            $searchEngine = 'elastic';
 
-        foreach ($products as $product) {
-            $results[] = [
-                'id'              => $product->id,
-                'sku'             => $product->sku,
-                'name'            => $product->name,
-                'price'           => $product->price,
-                'formatted_price' => core()->formatBasePrice($product->price),
-                'images'          => $product->images,
-                'inventories'     => $product->inventories,
-            ];
+            $indexNames = core()->getAllChannels()->map(function ($channel) {
+                return 'products_'.$channel->code.'_'.app()->getLocale().'_index';
+            })->toArray();
         }
 
-        $products->setCollection(collect($results));
+        $products = $this->productRepository
+            ->setSearchEngine($searchEngine)
+            ->getAll([
+                'index' => $indexNames ?? null,
+                'name'  => request('query'),
+                'sort'  => 'created_at',
+                'order' => 'desc',
+            ]);
 
-        return response()->json($products);
+        return ProductResource::collection($products);
     }
 
     /**

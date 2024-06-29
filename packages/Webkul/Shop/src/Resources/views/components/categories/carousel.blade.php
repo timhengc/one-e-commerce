@@ -15,29 +15,29 @@
         id="v-categories-carousel-template"
     >
         <div
-            class="container mt-14 max-lg:px-8 max-sm:mt-5"
+            class="container mt-14 max-lg:px-8 max-md:mt-7 max-md:!px-0 max-sm:mt-5"
             v-if="! isLoading && categories?.length"
         >
             <div class="relative">
                 <div
                     ref="swiperContainer"
-                    class="flex gap-10 overflow-auto scroll-smooth scrollbar-hide max-sm:gap-4"
+                    class="scrollbar-hide flex gap-10 overflow-auto scroll-smooth max-lg:gap-4"
                 >
                     <div
-                        class="grid grid-cols-1 gap-4 justify-items-center min-w-[120px] max-w-[120px] font-medium"
+                        class="grid min-w-[120px] max-w-[120px] grid-cols-1 justify-items-center gap-4 font-medium max-md:min-w-20 max-md:max-w-20 max-md:gap-2.5 max-md:first:ml-4 max-sm:min-w-[60px] max-sm:max-w-[60px] max-sm:gap-1.5"
                         v-for="category in categories"
                     >
                         <a
                             :href="category.slug"
-                            class="w-[110px] h-[110px] bg-[#F5F5F5] rounded-full"
+                            class="h-[110px] w-[110px] rounded-full bg-zinc-100 max-md:h-20 max-md:w-20 max-sm:h-[60px] max-sm:w-[60px]"
                             :aria-label="category.name"
                         >
-                            <template v-if="category.images.logo_url">
+                            <template v-if="category.logo?.large_image_url">
                                 <x-shop::media.images.lazy
-                                    ::src="category.images.logo_url"
+                                    ::src="category.logo.large_image_url"
                                     width="110"
                                     height="110"
-                                    class="w-[110px] h-[110px] rounded-full"
+                                    class="rounded-full max-sm:h-[60px] max-sm:w-[60px]"
                                     ::alt="category.name"
                                 />
                             </template>
@@ -48,7 +48,7 @@
                             class=""
                         >
                             <p
-                                class="text-center text-black text-lg max-sm:font-normal"
+                                class="text-center text-lg text-black max-md:text-base max-md:font-normal max-sm:text-sm"
                                 v-text="category.name"
                             >
                             </p>
@@ -57,7 +57,7 @@
                 </div>
 
                 <span
-                    class="flex items-center justify-center absolute top-9 -left-10 w-[50px] h-[50px] bg-white border border-black rounded-full transition icon-arrow-left-stylish text-2xl hover:bg-black hover:text-white max-lg:-left-7 cursor-pointer"
+                    class="icon-arrow-left-stylish absolute -left-10 top-9 flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-full border border-black bg-white text-2xl transition hover:bg-black hover:text-white max-lg:-left-7 max-md:hidden"
                     role="button"
                     aria-label="@lang('shop::components.carousel.previous')"
                     tabindex="0"
@@ -66,7 +66,7 @@
                 </span>
 
                 <span
-                    class="flex items-center justify-center absolute top-9 -right-6 w-[50px] h-[50px] bg-white border border-black rounded-full transition icon-arrow-right-stylish text-2xl hover:bg-black hover:text-white max-lg:-right-7 cursor-pointer"
+                    class="icon-arrow-right-stylish absolute -right-6 top-9 flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-full border border-black bg-white text-2xl transition hover:bg-black hover:text-white max-lg:-right-7 max-md:hidden"
                     role="button"
                     aria-label="@lang('shop::components.carousel.next')"
                     tabindex="0"

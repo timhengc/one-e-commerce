@@ -14,9 +14,7 @@ class SubscriptionController extends Controller
      *
      * @return void
      */
-    public function __construct(protected SubscribersListRepository $subscribersListRepository)
-    {
-    }
+    public function __construct(protected SubscribersListRepository $subscribersListRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -26,7 +24,7 @@ class SubscriptionController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(NewsLetterDataGrid::class)->toJson();
+            return datagrid(NewsLetterDataGrid::class)->process();
         }
 
         return view('admin::marketing.communications.subscribers.index');

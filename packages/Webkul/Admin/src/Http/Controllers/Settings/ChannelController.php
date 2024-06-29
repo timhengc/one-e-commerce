@@ -15,9 +15,7 @@ class ChannelController extends Controller
      *
      * @return void
      */
-    public function __construct(protected ChannelRepository $channelRepository)
-    {
-    }
+    public function __construct(protected ChannelRepository $channelRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -27,7 +25,7 @@ class ChannelController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(ChannelDataGrid::class)->toJson();
+            return datagrid(ChannelDataGrid::class)->process();
         }
 
         return view('admin::settings.channels.index');

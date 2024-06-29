@@ -15,19 +15,19 @@
         >
             <div>
                 <!-- Page Header -->
-                <div class="flex gap-4 justify-between items-center mb-5 max-sm:flex-wrap">
+                <div class="mb-5 flex items-center justify-between gap-4 max-sm:flex-wrap">
                     <!-- Title -->
                     <div class="grid gap-1.5">
-                        <p class="text-xl text-gray-800 dark:text-white font-bold leading-6">
+                        <p class="text-xl font-bold leading-6 text-gray-800 dark:text-white">
                             @lang('admin::app.reporting.' . $entity . '.index.' . request()->query('type'))
                         </p>
                     </div>
 
                     <!-- Actions -->
-                    <div class="flex gap-1.5 items-center">
+                    <div class="flex items-center gap-1.5">
                         <x-admin::dropdown position="bottom-right">
                             <x-slot:toggle>
-                                <span class="flex icon-setting p-1.5 rounded-md text-2xl cursor-pointer transition-all hover:bg-gray-200 dark:hover:bg-gray-800"></span>
+                                <span class="icon-export flex cursor-pointer rounded-md p-1.5 text-2xl transition-all hover:bg-gray-200 dark:hover:bg-gray-800"></span>
                             </x-slot>
 
                             <x-slot:menu class="!p-0 shadow-[0_5px_20px_rgba(0,0,0,0.15)] dark:border-gray-800">
@@ -44,6 +44,31 @@
                                 </x-admin::dropdown.menu.item>
                             </x-slot>
                         </x-admin::dropdown>
+                        
+                        <template v-if="channels.length > 2">
+                            <x-admin::dropdown position="bottom-right">
+                                <x-slot:toggle>
+                                    <button
+                                        type="button"
+                                        class="inline-flex w-full cursor-pointer appearance-none items-center justify-between gap-x-2 rounded-md border bg-white px-2.5 py-1.5 text-center text-sm leading-6 text-gray-600 transition-all marker:shadow hover:border-gray-400 focus:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-400 dark:focus:border-gray-400"
+                                    >
+                                        @{{ channels.find(channel => channel.code == filters.channel).name }}
+                                        
+                                        <span class="icon-sort-down text-2xl"></span>
+                                    </button>
+                                </x-slot>
+
+                                <x-slot:menu class="!p-0 shadow-[0_5px_20px_rgba(0,0,0,0.15)] dark:border-gray-800">
+                                    <x-admin::dropdown.menu.item
+                                        v-for="channel in channels"
+                                        ::class="{'bg-gray-100 dark:bg-gray-950': channel.code == filters.channel}"
+                                        @click="filters.channel = channel.code"
+                                    >
+                                        @{{ channel.name }}
+                                    </x-admin::dropdown.menu.item>
+                                </x-slot>
+                            </x-admin::dropdown>
+                        </template>
 
                         @if (in_array(request()->query('type'), [
                             'total-sales',
@@ -57,7 +82,7 @@
                             'total-products-added-to-wishlist',
                         ]))
                             <select
-                                class="custom-select flex w-fit min-h-[39px] rounded-md border px-3 pl-2 pr-9 text-sm text-gray-600 transition-all hover:border-gray-400 dark:hover:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                                class="custom-select flex min-h-[39px] w-fit rounded-md border px-3 pl-2 pr-9 text-sm text-gray-600 transition-all hover:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-400"
                                 v-model="filters.period"
                             >
                                 <option value="day">
@@ -76,7 +101,7 @@
 
                         <x-admin::flat-picker.date class="!w-[140px]" ::allow-input="false">
                             <input
-                                class="flex min-h-[39px] w-full rounded-md border px-3 py-2 text-sm text-gray-600 transition-all hover:border-gray-400 dark:hover:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                                class="flex min-h-[39px] w-full rounded-md border px-3 py-2 text-sm text-gray-600 transition-all hover:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-400"
                                 v-model="filters.start"
                                 placeholder="@lang('admin::app.reporting.view.start-date')"
                             />
@@ -84,7 +109,7 @@
 
                         <x-admin::flat-picker.date class="!w-[140px]" ::allow-input="false">
                             <input
-                                class="flex min-h-[39px] w-full rounded-md border px-3 py-2 text-sm text-gray-600 transition-all hover:border-gray-400 dark:hover:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                                class="flex min-h-[39px] w-full rounded-md border px-3 py-2 text-sm text-gray-600 transition-all hover:border-gray-400 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-400"
                                 v-model="filters.end"
                                 placeholder="@lang('admin::app.reporting.view.end-date')"
                             />
@@ -92,7 +117,7 @@
                     </div>
                 </div>
 
-                <div class="table-responsive grid w-full box-shadow rounded bg-white dark:bg-gray-900 overflow-hidden">
+                <div class="table-responsive box-shadow grid w-full overflow-hidden rounded bg-white dark:bg-gray-900">
                     <template v-if="isLoading">
                         <x-admin::shimmer.datagrid.table.head />
 
@@ -102,11 +127,11 @@
                     <template v-else>
                         <!-- Table Header -->
                         <div
-                            class="row grid grid-cols-4 grid-rows-1 gap-2.5 items-center px-4 py-2.5 border-b dark:border-gray-800 text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 font-semibold"
+                            class="row grid grid-cols-4 grid-rows-1 items-center gap-2.5 border-b bg-gray-50 px-4 py-2.5 font-semibold text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
                             :style="`grid-template-columns: repeat(${reporing.statistics.columns.length}, minmax(0, 1fr))`"
                         >
                             <div
-                                class="flex gap-2.5 cursor-pointer"
+                                class="flex cursor-pointer gap-2.5"
                                 v-for="column in reporing.statistics.columns"
                             >
                                 <p class="text-gray-600 dark:text-gray-300">
@@ -117,21 +142,19 @@
 
                         <!-- Table Body -->
                         <div
-                            class="row grid gap-2.5 items-center px-4 py-4 border-b dark:border-gray-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-gray-50 dark:hover:bg-gray-950" style="grid-template-columns: repeat(4, minmax(0, 1fr));"
+                            class="row grid items-center gap-2.5 border-b px-4 py-4 text-gray-600 transition-all hover:bg-gray-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-950" style="grid-template-columns: repeat(4, minmax(0, 1fr));"
                             :style="`grid-template-columns: repeat(${reporing.statistics.columns.length}, minmax(0, 1fr))`"
                             v-if="reporing.statistics.records.length"
                             v-for="record in reporing.statistics.records"
                         >
-                            <p
-                                v-for="column in reporing.statistics.columns"
-                            >
+                            <p v-for="column in reporing.statistics.columns">
                                 @{{ record[column.key] }}
                             </p>
                         </div>
 
                         <div
                             v-else
-                            class="row grid gap-2.5 text-center px-4 py-4 border-b dark:border-gray-800 text-gray-600 dark:text-gray-300 transition-all hover:bg-gray-50 dark:hover:bg-gray-950"
+                            class="row grid gap-2.5 border-b px-4 py-4 text-center text-gray-600 transition-all hover:bg-gray-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-950"
                         >
                             <p>@lang('admin::app.reporting.view.not-available')</p>
                         </div>
@@ -146,10 +169,23 @@
 
                 data() {
                     return {
+                        channels: [
+                            {
+                                name: "@lang('admin::app.reporting.view.all-channels')",
+                                code: ''
+                            },
+                            ...@json(core()->getAllChannels()),
+                        ],
+                        
                         filters: {
                             type: "{{ request()->query('type') }}",
+                            
                             period: 'day',
+
+                            channel: '',
+
                             start: "{{ $startDate->format('Y-m-d') }}",
+
                             end: "{{ $endDate->format('Y-m-d') }}",
                         },
 

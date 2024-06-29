@@ -17,9 +17,7 @@ class SearchSynonymController extends Controller
      *
      * @return void
      */
-    public function __construct(public SearchSynonymRepository $searchSynonymRepository)
-    {
-    }
+    public function __construct(public SearchSynonymRepository $searchSynonymRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -29,7 +27,7 @@ class SearchSynonymController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(SearchSynonymDataGrid::class)->toJson();
+            return datagrid(SearchSynonymDataGrid::class)->process();
         }
 
         return view('admin::marketing.search-seo.search-synonyms.index');

@@ -5,7 +5,7 @@ namespace Webkul\Admin\DataGrids\Theme;
 use Illuminate\Support\Facades\DB;
 use Webkul\DataGrid\DataGrid;
 
-class ThemeDatagrid extends DataGrid
+class ThemeDataGrid extends DataGrid
 {
     /**
      * Prepare query builder.
@@ -20,50 +20,80 @@ class ThemeDatagrid extends DataGrid
 
         $queryBuilder = DB::table('theme_customizations')
             ->distinct()
-            ->join('theme_customization_translations as tct', function ($leftJoin) use ($whereInLocales) {
-                $leftJoin->on('theme_customizations.id', '=', 'tct.theme_customization_id')
-                    ->whereIn('tct.locale', $whereInLocales);
+            ->join('theme_customization_translations', function ($leftJoin) use ($whereInLocales) {
+                $leftJoin->on('theme_customizations.id', '=', 'theme_customization_translations.theme_customization_id')
+                    ->whereIn('theme_customization_translations.locale', $whereInLocales);
             })
             ->join('channel_translations', function ($leftJoin) use ($whereInLocales) {
                 $leftJoin->on('theme_customizations.channel_id', '=', 'channel_translations.channel_id')
                     ->whereIn('channel_translations.locale', $whereInLocales);
             })
-            ->addSelect(
+            ->select(
                 'theme_customizations.id',
                 'theme_customizations.type',
                 'theme_customizations.sort_order',
                 'channel_translations.name as channel_name',
                 'theme_customizations.status',
                 'theme_customizations.name as name',
+                'theme_customizations.theme_code',
+                'theme_customizations.channel_id'
             );
 
+        $this->addFilter('id', 'theme_customizations.id');
         $this->addFilter('type', 'theme_customizations.type');
         $this->addFilter('name', 'theme_customizations.name');
         $this->addFilter('sort_order', 'theme_customizations.sort_order');
         $this->addFilter('status', 'theme_customizations.status');
-        $this->addFilter('channel_name', 'channel_name');
+        $this->addFilter('channel_name', 'theme_customizations.channel_id');
+        $this->addFilter('theme_code', 'theme_customizations.theme_code');
 
         return $queryBuilder;
     }
 
+    /**
+     * Add columns.
+     *
+     * @return void
+     */
     public function prepareColumns()
     {
+        $themes = config('themes.shop');
+
         $this->addColumn([
             'index'      => 'id',
             'label'      => trans('admin::app.settings.themes.index.datagrid.id'),
             'type'       => 'integer',
-            'searchable' => false,
             'filterable' => true,
             'sortable'   => true,
         ]);
 
         $this->addColumn([
-            'index'      => 'channel_name',
-            'label'      => trans('admin::app.settings.themes.index.datagrid.channel_name'),
-            'type'       => 'integer',
-            'searchable' => false,
-            'filterable' => true,
+            'index'              => 'channel_name',
+            'label'              => trans('admin::app.settings.themes.index.datagrid.channel_name'),
+            'type'               => 'string',
+            'filterable'         => true,
+            'filterable_type'    => 'dropdown',
+            'filterable_options' => core()->getAllChannels()
+                ->map(fn ($channel) => ['label' => $channel->name, 'value' => $channel->id])
+                ->values()
+                ->toArray(),
             'sortable'   => true,
+        ]);
+
+        $this->addColumn([
+            'index'              => 'theme_code',
+            'label'              => trans('admin::app.settings.themes.index.datagrid.theme'),
+            'type'               => 'string',
+            'filterable'         => true,
+            'filterable_type'    => 'dropdown',
+            'filterable_options' => collect($themes = config('themes.shop'))
+                ->map(fn ($theme, $code) => ['label' => $theme['name'], 'value' => $code])
+                ->values()
+                ->toArray(),
+            'closure'=> function ($row) use ($themes) {
+                return collect($themes)->first(fn ($theme, $code) => $code === $row->theme_code)['name'] ?? 'N/A';
+            },
+            'sortable'           => true,
         ]);
 
         $this->addColumn([
@@ -96,7 +126,7 @@ class ThemeDatagrid extends DataGrid
         $this->addColumn([
             'index'      => 'status',
             'label'      => trans('admin::app.settings.themes.index.datagrid.status'),
-            'type'       => 'string',
+            'type'       => 'boolean',
             'searchable' => true,
             'filterable' => true,
             'sortable'   => true,

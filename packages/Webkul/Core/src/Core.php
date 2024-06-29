@@ -5,9 +5,9 @@ namespace Webkul\Core;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Webkul\Core\Concerns\CurrencyFormatter;
 use Webkul\Core\Models\Channel;
 use Webkul\Core\Repositories\ChannelRepository;
-use Webkul\Core\Repositories\CoreConfigRepository;
 use Webkul\Core\Repositories\CountryRepository;
 use Webkul\Core\Repositories\CountryStateRepository;
 use Webkul\Core\Repositories\CurrencyRepository;
@@ -18,12 +18,14 @@ use Webkul\Tax\Repositories\TaxCategoryRepository;
 
 class Core
 {
+    use CurrencyFormatter;
+
     /**
      * The Bagisto version.
      *
      * @var string
      */
-    const BAGISTO_VERSION = '2.1.2';
+    const BAGISTO_VERSION = '2.2.1';
 
     /**
      * Current Channel.
@@ -89,15 +91,6 @@ class Core
     protected $singletonInstances = [];
 
     /**
-     * Register your core config keys here which you don't want to
-     * load in static array. These keys will load from database
-     * every time the `getConfigData` method is called.
-     */
-    private $coreConfigExceptions = [
-        'catalog.products.guest_checkout.allow_guest_checkout',
-    ];
-
-    /**
      * Create a new instance.
      *
      * @return void
@@ -109,11 +102,9 @@ class Core
         protected CountryRepository $countryRepository,
         protected CountryStateRepository $countryStateRepository,
         protected LocaleRepository $localeRepository,
-        protected CoreConfigRepository $coreConfigRepository,
         protected CustomerGroupRepository $customerGroupRepository,
         protected TaxCategoryRepository $taxCategoryRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Get the version number of the Bagisto.
@@ -542,28 +533,9 @@ class Core
     }
 
     /**
-     * Return currency symbol from currency code.
-     *
-     * @param  string|\Webkul\Core\Contracts\Currency  $currency
-     * @return string
+     * Format price.
      */
-    public function currencySymbol($currency)
-    {
-        $code = $currency instanceof \Webkul\Core\Contracts\Currency ? $currency->code : $currency;
-
-        $formatter = new \NumberFormatter(app()->getLocale().'@currency='.$code, \NumberFormatter::CURRENCY);
-
-        return $formatter->getSymbol(\NumberFormatter::CURRENCY_SYMBOL);
-    }
-
-    /**
-     * Format and convert price with currency symbol.
-     *
-     * @param  float  $price
-     * @param  string (optional)  $currencyCode
-     * @return string
-     */
-    public function formatPrice($price, $currencyCode = null)
+    public function formatPrice(?float $price, ?string $currencyCode = null): string
     {
         if (is_null($price)) {
             $price = 0;
@@ -573,56 +545,21 @@ class Core
             ? $this->getAllCurrencies()->where('code', $currencyCode)->first()
             : $this->getCurrentCurrency();
 
-        $formatter = new \NumberFormatter(app()->getLocale(), \NumberFormatter::CURRENCY);
-
-        $formatter->setAttribute(\NumberFormatter::FRACTION_DIGITS, $currency->decimal ?? 2);
-
-        if (! $currency) {
-            return $formatter->formatCurrency($price, $currencyCode);
-        }
-
-        if ($symbol = $currency->symbol) {
-            if ($this->currencySymbol($currency) == $symbol) {
-                return $formatter->formatCurrency($price, $currency->code);
-            }
-
-            $formatter->setSymbol(\NumberFormatter::CURRENCY_SYMBOL, $symbol);
-
-            return $formatter->format($price);
-        }
-
-        return $formatter->formatCurrency($price, $currency->code);
+        return $this->formatCurrency($price, $currency);
     }
 
     /**
-     * Format price with base currency symbol. This method also give ability to encode
-     * the base currency symbol and its optional.
-     *
-     * @param  float  $price
-     * @param  bool  $isEncoded
-     * @return string
+     * Format price with base currency symbol.
      */
-    public function formatBasePrice($price, $isEncoded = false)
+    public function formatBasePrice(?float $price): string
     {
         if (is_null($price)) {
             $price = 0;
         }
 
-        $formatter = new \NumberFormatter(app()->getLocale(), \NumberFormatter::CURRENCY);
+        $currency = $this->getBaseCurrency();
 
-        if ($symbol = $this->getBaseCurrency()->symbol) {
-            if ($this->currencySymbol($this->getBaseCurrencyCode()) == $symbol) {
-                $content = $formatter->formatCurrency($price, $this->getBaseCurrencyCode());
-            } else {
-                $formatter->setSymbol(\NumberFormatter::CURRENCY_SYMBOL, $symbol);
-
-                $content = $formatter->format($this->convertPrice($price));
-            }
-        } else {
-            $content = $formatter->formatCurrency($price, $this->getBaseCurrencyCode());
-        }
-
-        return ! $isEncoded ? $content : htmlentities($content);
+        return $this->formatCurrency($price, $currency);
     }
 
     /**
@@ -722,29 +659,10 @@ class Core
 
     /**
      * Retrieve information from payment configuration.
-     *
-     * @param  string  $field
-     * @param  int|string|null  $channelId
-     * @param  string|null  $locale
-     * @return mixed
      */
-    public function getConfigData($field, $channel = null, $locale = null)
+    public function getConfigData(string $field, ?string $currentChannelCode = null, ?string $currentLocaleCode = null): mixed
     {
-        if (empty($channel)) {
-            $channel = $this->getRequestedChannelCode();
-        }
-
-        if (empty($locale)) {
-            $locale = $this->getRequestedLocaleCode();
-        }
-
-        $coreConfig = $this->getCoreConfig($field, $channel, $locale);
-
-        if (! $coreConfig) {
-            return $this->getDefaultConfig($field);
-        }
-
-        return $coreConfig->value;
+        return system_config()->getConfigData($field, $currentChannelCode, $currentLocaleCode);
     }
 
     /**
@@ -882,31 +800,6 @@ class Core
     }
 
     /**
-     * Method to sort through the acl items and put them in order.
-     *
-     * @param  array  $items
-     * @return array
-     */
-    public function sortItems($items)
-    {
-        foreach ($items as &$item) {
-            if (count($item['children'])) {
-                $item['children'] = $this->sortItems($item['children']);
-            }
-        }
-
-        usort($items, function ($a, $b) {
-            if ($a['sort'] == $b['sort']) {
-                return 0;
-            }
-
-            return ($a['sort'] < $b['sort']) ? -1 : 1;
-        });
-
-        return $this->convertToAssociativeArray($items);
-    }
-
-    /**
      * Get config field.
      *
      * @param  string  $fieldName
@@ -914,105 +807,7 @@ class Core
      */
     public function getConfigField($fieldName)
     {
-        foreach (config('core') as $coreData) {
-            if (! isset($coreData['fields'])) {
-                continue;
-            }
-
-            foreach ($coreData['fields'] as $field) {
-                $name = $coreData['key'].'.'.$field['name'];
-
-                if ($name == $fieldName) {
-                    return $field;
-                }
-            }
-        }
-    }
-
-    /**
-     * Convert to associative array.
-     *
-     * @param  array  $items
-     * @return array
-     */
-    public function convertToAssociativeArray($items)
-    {
-        foreach ($items as $key1 => $level1) {
-            unset($items[$key1]);
-
-            $items[$level1['key']] = $level1;
-
-            if (! count($level1['children'])) {
-                continue;
-            }
-
-            foreach ($level1['children'] as $key2 => $level2) {
-                $temp2 = explode('.', $level2['key']);
-
-                $finalKey2 = end($temp2);
-
-                unset($items[$level1['key']]['children'][$key2]);
-
-                $items[$level1['key']]['children'][$finalKey2] = $level2;
-
-                if (! count($level2['children'])) {
-                    continue;
-                }
-
-                foreach ($level2['children'] as $key3 => $level3) {
-                    $temp3 = explode('.', $level3['key']);
-
-                    $finalKey3 = end($temp3);
-
-                    unset($items[$level1['key']]['children'][$finalKey2]['children'][$key3]);
-
-                    $items[$level1['key']]['children'][$finalKey2]['children'][$finalKey3] = $level3;
-                }
-            }
-        }
-
-        return $items;
-    }
-
-    /**
-     * Array set.
-     *
-     * @param  array  $items
-     * @param  string  $key
-     * @param  string|int|float  $value
-     * @return array
-     */
-    public function array_set(&$array, $key, $value)
-    {
-        if (is_null($key)) {
-            return $array = $value;
-        }
-
-        $keys = explode('.', $key);
-        $count = count($keys);
-
-        while (count($keys) > 1) {
-            $key = array_shift($keys);
-
-            if (
-                ! isset($array[$key])
-                || ! is_array($array[$key])
-            ) {
-                $array[$key] = [];
-            }
-
-            $array = &$array[$key];
-        }
-
-        $finalKey = array_shift($keys);
-
-        if (isset($array[$finalKey])) {
-            $array[$finalKey] = $this->arrayMerge($array[$finalKey], $value);
-        } else {
-            $array[$finalKey] = $value;
-        }
-
-        return $array;
+        return system_config()->getConfigField($fieldName);
     }
 
     /**
@@ -1112,87 +907,23 @@ class Core
     }
 
     /**
-     * Array merge.
+     * Get Contact email details.
      *
      * @return array
      */
-    protected function arrayMerge(array &$array1, array &$array2)
+    public function getContactEmailDetails()
     {
-        $merged = $array1;
+        $contactName = $this->getConfigData('emails.configure.email_settings.contact_name')
+            ?: (config('mail.contact.name')
+            ?: config('mail.from.name'));
 
-        foreach ($array2 as $key => &$value) {
-            if (
-                is_array($value)
-                && isset($merged[$key])
-                && is_array($merged[$key])
-            ) {
-                $merged[$key] = $this->arrayMerge($merged[$key], $value);
-            } else {
-                $merged[$key] = $value;
-            }
-        }
+        $contactEmail = $this->getConfigData('emails.configure.email_settings.contact_email')
+            ?: config('mail.contact.address');
 
-        return $merged;
-    }
-
-    /**
-     * Get core config values.
-     *
-     * @param  mixed  $field
-     * @param  mixed  $channel
-     * @param  mixed  $locale
-     * @return mixed
-     */
-    protected function getCoreConfig($field, $channel, $locale)
-    {
-        $fields = $this->getConfigField($field);
-
-        if (! empty($fields['channel_based'])) {
-            if (! empty($fields['locale_based'])) {
-                $coreConfigValue = $this->coreConfigRepository->findOneWhere([
-                    'code'         => $field,
-                    'channel_code' => $channel,
-                    'locale_code'  => $locale,
-                ]);
-            } else {
-                $coreConfigValue = $this->coreConfigRepository->findOneWhere([
-                    'code'         => $field,
-                    'channel_code' => $channel,
-                ]);
-            }
-        } else {
-            if (! empty($fields['locale_based'])) {
-                $coreConfigValue = $this->coreConfigRepository->findOneWhere([
-                    'code'        => $field,
-                    'locale_code' => $locale,
-                ]);
-            } else {
-                $coreConfigValue = $this->coreConfigRepository->findOneWhere([
-                    'code' => $field,
-                ]);
-            }
-        }
-
-        return $coreConfigValue;
-    }
-
-    /**
-     * Get default config.
-     *
-     * @param  string  $field
-     * @return mixed
-     */
-    protected function getDefaultConfig($field)
-    {
-        $configFieldInfo = $this->getConfigField($field);
-
-        $fields = explode('.', $field);
-
-        array_shift($fields);
-
-        $field = implode('.', $fields);
-
-        return Config::get($field, $configFieldInfo['default'] ?? null);
+        return [
+            'name'  => $contactName,
+            'email' => $contactEmail,
+        ];
     }
 
     /**

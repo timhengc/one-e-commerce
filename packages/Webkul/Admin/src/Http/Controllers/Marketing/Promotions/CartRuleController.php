@@ -18,9 +18,7 @@ class CartRuleController extends Controller
      *
      * @return void
      */
-    public function __construct(protected CartRuleRepository $cartRuleRepository)
-    {
-    }
+    public function __construct(protected CartRuleRepository $cartRuleRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -30,7 +28,7 @@ class CartRuleController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(CartRuleDataGrid::class)->toJson();
+            return datagrid(CartRuleDataGrid::class)->process();
         }
 
         return view('admin::marketing.promotions.cart-rules.index');

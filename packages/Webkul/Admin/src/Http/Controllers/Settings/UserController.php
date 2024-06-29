@@ -23,8 +23,7 @@ class UserController extends Controller
     public function __construct(
         protected AdminRepository $adminRepository,
         protected RoleRepository $roleRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -34,7 +33,7 @@ class UserController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(UserDataGrid::class)->toJson();
+            return datagrid(UserDataGrid::class)->process();
         }
 
         $roles = $this->roleRepository->all();

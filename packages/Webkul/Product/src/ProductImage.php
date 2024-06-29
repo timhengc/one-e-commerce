@@ -14,9 +14,7 @@ class ProductImage
      *
      * @return void
      */
-    public function __construct(protected ProductRepository $productRepository)
-    {
-    }
+    public function __construct(protected ProductRepository $productRepository) {}
 
     /**
      * Retrieve collection of gallery images.
@@ -144,11 +142,23 @@ class ProductImage
      */
     private function getFallbackImageUrls(): array
     {
+        $smallImageUrl = core()->getConfigData('catalog.products.cache_small_image.url')
+                        ? Storage::url(core()->getConfigData('catalog.products.cache_small_image.url'))
+                        : bagisto_asset('images/small-product-placeholder.webp', 'shop');
+
+        $mediumImageUrl = core()->getConfigData('catalog.products.cache_medium_image.url')
+                        ? Storage::url(core()->getConfigData('catalog.products.cache_medium_image.url'))
+                        : bagisto_asset('images/small-product-placeholder.webp', 'shop');
+
+        $largeImageUrl = core()->getConfigData('catalog.products.cache_large_image.url')
+                        ? Storage::url(core()->getConfigData('catalog.products.cache_large_image.url'))
+                        : bagisto_asset('images/small-product-placeholder.webp', 'shop');
+
         return [
-            'small_image_url'    => bagisto_asset('images/small-product-placeholder.webp'),
-            'medium_image_url'   => bagisto_asset('images/medium-product-placeholder.webp'),
-            'large_image_url'    => bagisto_asset('images/large-product-placeholder.webp'),
-            'original_image_url' => bagisto_asset('images/large-product-placeholder.webp'),
+            'small_image_url'    => $smallImageUrl,
+            'medium_image_url'   => $mediumImageUrl,
+            'large_image_url'    => $largeImageUrl,
+            'original_image_url' => bagisto_asset('images/large-product-placeholder.webp', 'shop'),
         ];
     }
 

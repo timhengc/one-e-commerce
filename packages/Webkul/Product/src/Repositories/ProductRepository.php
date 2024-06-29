@@ -11,9 +11,15 @@ use Webkul\Attribute\Repositories\AttributeRepository;
 use Webkul\Core\Eloquent\Repository;
 use Webkul\Customer\Repositories\CustomerRepository;
 use Webkul\Marketing\Repositories\SearchSynonymRepository;
+use Webkul\Product\Contracts\Product;
 
 class ProductRepository extends Repository
 {
+    /**
+     * Search engine.
+     */
+    protected $searchEngine = 'database';
+
     /**
      * Create a new repository instance.
      *
@@ -35,7 +41,7 @@ class ProductRepository extends Repository
      */
     public function model(): string
     {
-        return 'Webkul\Product\Contracts\Product';
+        return Product::class;
     }
 
     /**
@@ -56,20 +62,16 @@ class ProductRepository extends Repository
      * Update product.
      *
      * @param  int  $id
-     * @param  string  $attribute
+     * @param  array  $attributes
      * @return \Webkul\Product\Contracts\Product
      */
-    public function update(array $data, $id, $attribute = 'id')
+    public function update(array $data, $id, $attributes = [])
     {
         $product = $this->findOrFail($id);
 
-        $product = $product->getTypeInstance()->update($data, $id, $attribute);
+        $product = $product->getTypeInstance()->update($data, $id, $attributes);
 
         $product->refresh();
-
-        if (isset($data['channels'])) {
-            $product['channels'] = $data['channels'];
-        }
 
         return $product;
     }
@@ -102,6 +104,16 @@ class ProductRepository extends Repository
     }
 
     /**
+     * Copy product.
+     */
+    public function setSearchEngine(string $searchEngine): self
+    {
+        $this->searchEngine = $searchEngine;
+
+        return $this;
+    }
+
+    /**
      * Return product by filtering through attribute values.
      *
      * @param  string  $code
@@ -119,35 +131,45 @@ class ProductRepository extends Repository
 
         if ($attribute->value_per_channel) {
             if ($attribute->value_per_locale) {
-                $attributeValues = $attributeValues
+                $filteredAttributeValues = $attributeValues
                     ->where('channel', core()->getRequestedChannelCode())
                     ->where('locale', core()->getRequestedLocaleCode());
+
+                if ($attributeValues->isEmpty()) {
+                    $filteredAttributeValues = $attributeValues
+                        ->where('channel', core()->getRequestedChannelCode())
+                        ->where('locale', core()->getDefaultLocaleCodeFromDefaultChannel());
+                }
             } else {
-                $attributeValues = $attributeValues
+                $filteredAttributeValues = $attributeValues
                     ->where('channel', core()->getRequestedChannelCode());
             }
         } else {
             if ($attribute->value_per_locale) {
-                $attributeValues = $attributeValues
+                $filteredAttributeValues = $attributeValues
                     ->where('locale', core()->getRequestedLocaleCode());
+
+                if ($filteredAttributeValues->isEmpty()) {
+                    $filteredAttributeValues = $attributeValues
+                        ->where('locale', core()->getDefaultLocaleCodeFromDefaultChannel());
+                }
+            } else {
+                $filteredAttributeValues = $attributeValues;
             }
         }
 
-        return $attributeValues->first()?->product;
+        return $filteredAttributeValues->first()?->product;
     }
 
     /**
      * Retrieve product from slug without throwing an exception.
-     *
-     * @param  string  $slug
-     * @return \Webkul\Product\Contracts\Product
      */
-    public function findBySlug($slug)
+    public function findBySlug(string $slug): ?Product
     {
-        if (core()->getConfigData('catalog.products.storefront.search_mode') == 'elastic') {
-            request()->query->add(['url_key' => $slug]);
-
-            $indices = $this->elasticSearchRepository->search(null, [
+        if ($this->searchEngine == 'elastic') {
+            $indices = $this->elasticSearchRepository->search([
+                'url_key' => $slug,
+            ], [
                 'type'  => '',
                 'from'  => 0,
                 'limit' => 1,
@@ -163,11 +185,8 @@ class ProductRepository extends Repository
 
     /**
      * Retrieve product from slug.
-     *
-     * @param  string  $slug
-     * @return \Webkul\Product\Contracts\Product
      */
-    public function findBySlugOrFail($slug)
+    public function findBySlugOrFail(string $slug): ?Product
     {
         $product = $this->findBySlug($slug);
 
@@ -183,37 +202,25 @@ class ProductRepository extends Repository
     /**
      * Get all products.
      *
-     * To Do (@devansh-webkul): Need to reduce all the request query from this repo and provide
-     * good request parameter with an array type as an argument. Make a clean pull request for
-     * this to have track record.
-     *
      * @return \Illuminate\Support\Collection
      */
-    public function getAll()
+    public function getAll(array $params = [])
     {
-        if (core()->getConfigData('catalog.products.storefront.search_mode') == 'elastic') {
-            return $this->searchFromElastic();
+        if ($this->searchEngine == 'elastic') {
+            return $this->searchFromElastic($params);
         }
 
-        return $this->searchFromDatabase();
+        return $this->searchFromDatabase($params);
     }
 
     /**
      * Search product from database.
      *
-     * To Do (@devansh-webkul): Need to reduce all the request query from this repo and provide
-     * good request parameter with an array type as an argument. Make a clean pull request for
-     * this to have track record.
-     *
      * @return \Illuminate\Support\Collection
      */
-    public function searchFromDatabase()
+    public function searchFromDatabase(array $params = [])
     {
-        $params = array_merge([
-            'status'               => 1,
-            'visible_individually' => 1,
-            'url_key'              => null,
-        ], request()->input());
+        $params['url_key'] ??= null;
 
         if (! empty($params['query'])) {
             $params['name'] = $params['query'];
@@ -227,6 +234,11 @@ class ProductRepository extends Repository
             'price_indices',
             'inventory_indices',
             'reviews',
+            'variants',
+            'variants.attribute_family',
+            'variants.attribute_values',
+            'variants.price_indices',
+            'variants.inventory_indices',
         ])->scopeQuery(function ($query) use ($params) {
             $prefix = DB::getTablePrefix();
 
@@ -243,6 +255,11 @@ class ProductRepository extends Repository
             if (! empty($params['category_id'])) {
                 $qb->leftJoin('product_categories', 'product_categories.product_id', '=', 'products.id')
                     ->whereIn('product_categories.category_id', explode(',', $params['category_id']));
+            }
+
+            if (! empty($params['channel_id'])) {
+                $qb->leftJoin('product_channels', 'products.id', '=', 'product_channels.product_id')
+                    ->where('product_channels.channel_id', explode(',', $params['channel_id']));
             }
 
             if (! empty($params['type'])) {
@@ -323,22 +340,24 @@ class ProductRepository extends Repository
              * Filter query by attributes.
              */
             if ($attributes->isNotEmpty()) {
-                $qb->leftJoin('product_attribute_values', 'products.id', '=', 'product_attribute_values.product_id');
+                $qb->where(function ($filterQuery) use ($qb, $params, $attributes) {
+                    $aliases = [
+                        'products' => 'product_attribute_values',
+                        'variants' => 'variant_attribute_values',
+                    ];
 
-                $qb->where(function ($filterQuery) use ($params, $attributes) {
-                    foreach ($attributes as $attribute) {
-                        $filterQuery->orWhere(function ($attributeQuery) use ($params, $attribute) {
-                            $attributeQuery = $attributeQuery->where('product_attribute_values.attribute_id', $attribute->id);
+                    foreach ($aliases as $table => $tableAlias) {
+                        $filterQuery->orWhere(function ($subFilterQuery) use ($qb, $params, $attributes, $table, $tableAlias) {
+                            foreach ($attributes as $attribute) {
+                                $alias = $attribute->code.'_'.$tableAlias;
 
-                            $values = explode(',', $params[$attribute->code]);
+                                $qb->leftJoin('product_attribute_values as '.$alias, function ($join) use ($table, $alias, $attribute) {
+                                    $join->on($table.'.id', '=', $alias.'.product_id');
 
-                            if ($attribute->type == 'price') {
-                                $attributeQuery->whereBetween('product_attribute_values.'.$attribute->column_name, [
-                                    core()->convertToBasePrice(current($values)),
-                                    core()->convertToBasePrice(end($values)),
-                                ]);
-                            } else {
-                                $attributeQuery->whereIn('product_attribute_values.'.$attribute->column_name, $values);
+                                    $join->where($alias.'.attribute_id', $attribute->id);
+                                });
+
+                                $subFilterQuery->whereIn($alias.'.'.$attribute->column_name, explode(',', $params[$attribute->code]));
                             }
                         });
                     }
@@ -363,9 +382,20 @@ class ProductRepository extends Repository
 
                         $qb->leftJoin('product_attribute_values as '.$alias, function ($join) use ($alias, $attribute) {
                             $join->on('products.id', '=', $alias.'.product_id')
-                                ->where($alias.'.attribute_id', $attribute->id)
-                                ->where($alias.'.channel', core()->getRequestedChannelCode())
-                                ->where($alias.'.locale', core()->getRequestedLocaleCode());
+                                ->where($alias.'.attribute_id', $attribute->id);
+
+                            if ($attribute->value_per_channel) {
+                                if ($attribute->value_per_locale) {
+                                    $join->where($alias.'.channel', core()->getRequestedChannelCode())
+                                        ->where($alias.'.locale', core()->getRequestedLocaleCode());
+                                } else {
+                                    $join->where($alias.'.channel', core()->getRequestedChannelCode());
+                                }
+                            } else {
+                                if ($attribute->value_per_locale) {
+                                    $join->where($alias.'.locale', core()->getRequestedLocaleCode());
+                                }
+                            }
                         })
                             ->orderBy($alias.'.'.$attribute->column_name, $sortOptions['order']);
                     }
@@ -388,24 +418,17 @@ class ProductRepository extends Repository
     /**
      * Search product from elastic search.
      *
-     * To Do (@devansh-webkul): Need to reduce all the request query from this repo and provide
-     * good request parameter with an array type as an argument. Make a clean pull request for
-     * this to have track record.
-     *
      * @return \Illuminate\Support\Collection
      */
-    public function searchFromElastic()
+    public function searchFromElastic(array $params = [])
     {
-        $params = request()->input();
-
         $currentPage = Paginator::resolveCurrentPage('page');
 
         $limit = $this->getPerPageLimit($params);
 
         $sortOptions = $this->getSortOptions($params);
 
-        $indices = $this->elasticSearchRepository->search($params['category_id'] ?? null, [
-            'type'  => $params['type'] ?? '',
+        $indices = $this->elasticSearchRepository->search($params, [
             'from'  => ($currentPage * $limit) - $limit,
             'limit' => $limit,
             'sort'  => $sortOptions['sort'],
@@ -420,6 +443,11 @@ class ProductRepository extends Repository
             'price_indices',
             'inventory_indices',
             'reviews',
+            'variants',
+            'variants.attribute_family',
+            'variants.attribute_values',
+            'variants.price_indices',
+            'variants.inventory_indices',
         ])->scopeQuery(function ($query) use ($indices) {
             $qb = $query->distinct()
                 ->whereIn('products.id', $indices['ids']);
@@ -434,7 +462,7 @@ class ProductRepository extends Repository
 
         $results = new LengthAwarePaginator($items, $indices['total'], $limit, $currentPage, [
             'path'  => request()->url(),
-            'query' => request()->query(),
+            'query' => $params,
         ]);
 
         return $results;

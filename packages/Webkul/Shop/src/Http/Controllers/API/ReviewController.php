@@ -21,8 +21,7 @@ class ReviewController extends APIController
         protected ProductRepository $productRepository,
         protected ProductReviewRepository $productReviewRepository,
         protected ProductReviewAttachmentRepository $productReviewAttachmentRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Using const variable for status
@@ -33,10 +32,8 @@ class ReviewController extends APIController
 
     /**
      * Product listings.
-     *
-     * @param  int  $id
      */
-    public function index($id): JsonResource
+    public function index(int $id): JsonResource
     {
         $product = $this->productRepository
             ->find($id)
@@ -49,10 +46,8 @@ class ReviewController extends APIController
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  int  $id
      */
-    public function store($id): JsonResource
+    public function store(int $id): JsonResource
     {
         $this->validate(request(), [
             'title'         => 'required',
@@ -86,11 +81,8 @@ class ReviewController extends APIController
 
     /**
      * Translate the specified resource in storage.
-     *
-     * @param  int  $id
-     * @param  int  $reviewId
      */
-    public function translate($id, $reviewId): JsonResponse
+    public function translate(int $reviewId): JsonResponse
     {
         $review = $this->productReviewRepository->find($reviewId);
 

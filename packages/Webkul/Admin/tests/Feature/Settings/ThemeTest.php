@@ -8,7 +8,7 @@ use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 it('should returns the theme index page', function () {
-    // Act and Assert
+    // Act and Assert.
     $this->loginAsAdmin();
 
     get(route('admin.settings.themes.index'))
@@ -18,7 +18,7 @@ it('should returns the theme index page', function () {
 });
 
 it('should fail the validation with errors when certain field not provided when store the theme', function () {
-    // Act and Assert
+    // Act and Assert.
     $this->loginAsAdmin();
 
     postJson(route('admin.settings.themes.store'))
@@ -26,37 +26,44 @@ it('should fail the validation with errors when certain field not provided when 
         ->assertJsonValidationErrorFor('sort_order')
         ->assertJsonValidationErrorFor('type')
         ->assertJsonValidationErrorFor('channel_id')
+        ->assertJsonValidationErrorFor('theme_code')
         ->assertUnprocessable();
 });
 
 it('should fail the validation with errors when correct type not provided when store the theme', function () {
-    // Act and Assert
+    // Act and Assert.
     $this->loginAsAdmin();
 
     postJson(route('admin.settings.themes.store'), [
-        'type' => fake()->word(),
+        'type' => 'INVALID_TYPE',
     ])
         ->assertJsonValidationErrorFor('name')
         ->assertJsonValidationErrorFor('sort_order')
         ->assertJsonValidationErrorFor('type')
         ->assertJsonValidationErrorFor('channel_id')
+        ->assertJsonValidationErrorFor('theme_code')
         ->assertUnprocessable();
 });
 
 it('should store the newly created theme', function () {
-    // Arrange
+    // Arrange.
     $lastThemeId = ThemeCustomization::factory()->create()->id + 1;
 
-    $types = ['product_carousel', 'category_carousel', 'image_carousel', 'footer_links', 'services_content'];
-
-    // Act and Assert
+    // Act and Assert.
     $this->loginAsAdmin();
 
     postJson(route('admin.settings.themes.store'), [
-        'type'       => $type = fake()->randomElement($types),
+        'type'       => $type = fake()->randomElement([
+            'product_carousel',
+            'category_carousel',
+            'image_carousel',
+            'footer_links',
+            'services_content',
+        ]),
         'name'       => $name = fake()->name(),
         'sort_order' => $lastThemeId,
         'channel_id' => $channelId = core()->getCurrentChannel()->id,
+        'theme_code' => $themeCode = core()->getCurrentChannel()->theme,
     ])
         ->assertOk()
         ->assertJsonPath('redirect_url', route('admin.settings.themes.edit', $lastThemeId));
@@ -68,16 +75,17 @@ it('should store the newly created theme', function () {
                 'type'       => $type,
                 'name'       => $name,
                 'channel_id' => $channelId,
+                'theme_code' => $themeCode,
             ],
         ],
     ]);
 });
 
 it('should fail the validation with errors when correct type not provided when update the theme', function () {
-    // Arrange
+    // Arrange.
     $theme = ThemeCustomization::factory()->create();
 
-    // Act and Assert
+    // Act and Assert.
     $this->loginAsAdmin();
 
     postJson(route('admin.settings.themes.update', $theme->id))
@@ -85,6 +93,7 @@ it('should fail the validation with errors when correct type not provided when u
         ->assertJsonValidationErrorFor('sort_order')
         ->assertJsonValidationErrorFor('type')
         ->assertJsonValidationErrorFor('channel_id')
+        ->assertJsonValidationErrorFor('theme_code')
         ->assertUnprocessable();
 });
 
@@ -107,6 +116,7 @@ it('should update the theme customizations', function () {
             ];
 
             break;
+
         case ThemeCustomization::CATEGORY_CAROUSEL:
             $data[app()->getLocale()] = [
                 'options' => [
@@ -120,6 +130,7 @@ it('should update the theme customizations', function () {
             ];
 
             break;
+
         case ThemeCustomization::IMAGE_CAROUSEL:
             $data[app()->getLocale()] = [
                 'options' => [
@@ -132,6 +143,7 @@ it('should update the theme customizations', function () {
             ];
 
             break;
+
         case ThemeCustomization::FOOTER_LINKS:
             $data[app()->getLocale()] = [
                 'options' => [
@@ -166,9 +178,10 @@ it('should update the theme customizations', function () {
     $data['name'] = $name = fake()->name();
     $data['sort_order'] = '1';
     $data['channel_id'] = core()->getCurrentChannel()->id;
+    $data['theme_code'] = core()->getCurrentChannel()->theme;
     $data['status'] = 'on';
 
-    // Act and Assert
+    // Act and Assert.
     $this->loginAsAdmin();
 
     postJson(route('admin.settings.themes.update', $theme->id), $data)
@@ -187,10 +200,10 @@ it('should update the theme customizations', function () {
 });
 
 it('should delete the theme', function () {
-    // Arrange
+    // Arrange.
     $theme = ThemeCustomization::factory()->create();
 
-    // Act and Assert
+    // Act and Assert.
     $this->loginAsAdmin();
 
     deleteJson(route('admin.settings.themes.delete', $theme->id))
@@ -199,5 +212,9 @@ it('should delete the theme', function () {
 
     $this->assertDatabaseMissing('theme_customizations', [
         'id' => $theme->id,
+    ]);
+
+    $this->assertDatabaseMissing('theme_customization_translations', [
+        'theme_customization_id' => $theme->id,
     ]);
 });

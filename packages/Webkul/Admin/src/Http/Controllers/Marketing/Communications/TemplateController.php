@@ -15,9 +15,7 @@ class TemplateController extends Controller
      *
      * @return void
      */
-    public function __construct(protected TemplateRepository $templateRepository)
-    {
-    }
+    public function __construct(protected TemplateRepository $templateRepository) {}
 
     /**
      * Display a listing of the resource.
@@ -27,7 +25,7 @@ class TemplateController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            return app(EmailTemplateDataGrid::class)->toJson();
+            return datagrid(EmailTemplateDataGrid::class)->process();
         }
 
         return view('admin::marketing.communications.templates.index');

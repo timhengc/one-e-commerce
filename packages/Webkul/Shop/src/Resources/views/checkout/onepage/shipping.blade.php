@@ -16,7 +16,7 @@
         type="text/x-template"
         id="v-shipping-methods-template"
     >
-        <div class="mb-7">
+        <div class="mb-7 max-md:mb-0">
             <template v-if="! methods">
                 <!-- Shipping Method Shimmer Effect -->
                 <x-shop::shimmer.checkout.onepage.shipping-method />
@@ -24,59 +24,61 @@
 
             <template v-else>
                 <!-- Accordion Blade Component -->
-                <x-shop::accordion class="!border-b-0">
+                <x-shop::accordion class="overflow-hidden !border-b-0 max-md:rounded-lg max-md:!border-none max-md:!bg-gray-100">
                     <!-- Accordion Blade Component Header -->
-                    <x-slot:header class="!py-4 !px-0">
-                        <div class="flex justify-between items-center">
-                            <h2 class="text-2xl font-medium max-sm:text-xl">
+                    <x-slot:header class="px-0 py-4 max-md:p-3 max-md:text-sm max-md:font-medium max-sm:p-2">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-2xl font-medium max-md:text-base">
                                 @lang('shop::app.checkout.onepage.shipping.shipping-method')
                             </h2>
                         </div>
                     </x-slot>
 
                     <!-- Accordion Blade Component Content -->
-                    <x-slot:content class="!p-0 mt-8">
-                        <div class="flex flex-wrap gap-8">
-                            <div
-                                class="relative max-w-[218px] max-sm:max-w-full max-sm:flex-auto select-none"
-                                v-for="method in methods"
-                            >
+                    <x-slot:content class="mt-8 !p-0 max-md:mt-0 max-md:rounded-t-none max-md:border max-md:border-t-0 max-md:!p-4">
+                        <div class="flex flex-wrap gap-8 max-md:gap-4 max-sm:gap-2.5">
+                            <template v-for="method in methods">
                                 {!! view_render_event('bagisto.shop.checkout.onepage.shipping.before') !!}
 
-                                <div v-for="rate in method.rates">
+                                <div
+                                    class="relative max-w-[218px] select-none max-md:max-w-full max-md:flex-auto"
+                                    v-for="rate in method.rates"
+                                >
                                     <input 
                                         type="radio"
                                         name="shipping_method"
                                         :id="rate.method"
                                         :value="rate.method"
-                                        class="hidden peer"
+                                        class="peer hidden"
                                         @change="store(rate.method)"
                                     >
 
                                     <label 
-                                        class="icon-radio-unselect absolute ltr:right-5 rtl:left-5 top-5 text-2xl text-navyBlue peer-checked:icon-radio-select cursor-pointer"
+                                        class="icon-radio-unselect peer-checked:icon-radio-select absolute top-5 cursor-pointer text-2xl text-navyBlue ltr:right-5 rtl:left-5"
                                         :for="rate.method"
                                     >
                                     </label>
 
                                     <label 
-                                        class="block p-5 border border-[#E9E9E9] rounded-xl cursor-pointer"
+                                        class="block cursor-pointer rounded-xl border border-zinc-200 p-5 max-sm:flex max-sm:gap-4 max-sm:rounded-lg max-sm:px-4 max-sm:py-2.5"
                                         :for="rate.method"
                                     >
-                                        <span class="icon-flate-rate text-6xl text-navyBlue"></span>
+                                        <span class="icon-flate-rate text-6xl text-navyBlue max-sm:text-5xl"></span>
 
-                                        <p class="text-2xl mt-1.5 font-semibold max-sm:text-xl">
-                                            @{{ rate.base_formatted_price }}
-                                        </p>
-                                        
-                                        <p class="text-xs mt-2.5 font-medium">
-                                            <span class="font-medium">@{{ rate.method_title }}</span> - @{{ rate.method_description }}
-                                        </p>
+                                        <div>
+                                            <p class="mt-1.5 text-2xl font-semibold max-md:text-base">
+                                                @{{ rate.base_formatted_price }}
+                                            </p>
+                                            
+                                            <p class="mt-2.5 text-xs font-medium max-md:mt-1 max-sm:mt-0 max-sm:font-normal max-sm:text-zinc-500">
+                                                <span class="font-medium">@{{ rate.method_title }}</span> - @{{ rate.method_description }}
+                                            </p>
+                                        </div>
                                     </label>
                                 </div>
 
                                 {!! view_render_event('bagisto.shop.checkout.onepage.shipping.after') !!}
-                            </div>
+                            </template>
                         </div>
                     </x-slot>
                 </x-shop::accordion>
