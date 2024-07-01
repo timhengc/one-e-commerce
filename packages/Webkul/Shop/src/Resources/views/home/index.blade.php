@@ -16,7 +16,7 @@
     <x-slot:title>
         {{  $channel->home_seo['meta_title'] ?? '' }}
     </x-slot>
-    
+
     <!-- Loop over the theme customization -->
     @foreach ($customizations as $customization)
         @php ($data = $customization->options) @endphp
@@ -26,34 +26,33 @@
             @case ($customization::IMAGE_CAROUSEL)
                 <!-- Image Carousel -->
                 <x-shop::carousel :options="$data" aria-label="Image Carousel" />
-
                 @break
-            @case ($customization::STATIC_CONTENT)
-                <!-- push style -->
-                @if (! empty($data['css']))
-                    @push ('styles')
-                        <style>
-                            {{ $data['css'] }}
-                        </style>
-                    @endpush
-                @endif
+{{--            @case ($customization::STATIC_CONTENT)--}}
+{{--                <!-- push style -->--}}
+{{--                @if (! empty($data['css']))--}}
+{{--                    @push ('styles')--}}
+{{--                        <style>--}}
+{{--                            {{ $data['css'] }}--}}
+{{--                        </style>--}}
+{{--                    @endpush--}}
+{{--                @endif--}}
 
-                <!-- render html -->
-                @if (! empty($data['html']))
-                    {!! $data['html'] !!}
-                @endif
+{{--                <!-- render html -->--}}
+{{--                @if (! empty($data['html']))--}}
+{{--                    {!! $data['html'] !!}--}}
+{{--                @endif--}}
 
-                @break
-            @case ($customization::CATEGORY_CAROUSEL)
-                <!-- Categories carousel -->
-                <x-shop::categories.carousel
-                    :title="$data['title'] ?? ''"
-                    :src="route('shop.api.categories.index', $data['filters'] ?? [])"
-                    :navigation-link="route('shop.home.index')"
-                    aria-label="Categories Carousel"
-                />
+{{--                @break--}}
+{{--            @case ($customization::CATEGORY_CAROUSEL)--}}
+{{--                <!-- Categories carousel -->--}}
+{{--                <x-shop::categories.carousel--}}
+{{--                    :title="$data['title'] ?? ''"--}}
+{{--                    :src="route('shop.api.categories.index', $data['filters'] ?? [])"--}}
+{{--                    :navigation-link="route('shop.home.index')"--}}
+{{--                    aria-label="Categories Carousel"--}}
+{{--                />--}}
 
-                @break
+{{--                @break--}}
             @case ($customization::PRODUCT_CAROUSEL)
                 <!-- Product Carousel -->
                 <x-shop::products.carousel

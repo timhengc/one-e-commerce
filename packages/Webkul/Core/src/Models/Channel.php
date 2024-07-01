@@ -114,7 +114,10 @@ class Channel extends TranslatableModel implements ChannelContract
         if (! $this->logo) {
             return;
         }
-
+        //如果logo以http开头则直接返回
+        if (strpos($this->logo, 'http') === 0) {
+            return $this->logo;
+        }
         return Storage::url($this->logo);
     }
 
