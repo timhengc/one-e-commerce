@@ -44,7 +44,8 @@
         "pusher/pusher-php-server": "^7.0",
         "shetabit/visitor": "^4.1",
         "spatie/laravel-responsecache": "^7.4",
-        "spatie/laravel-sitemap": "^6.2"
+        "spatie/laravel-sitemap": "^6.2",
+        "webbycrown/blog-for-bagisto": "dev-main"
     },
     "require-dev": {
         "bagisto/laravel-datafaker": "dev-master",
@@ -131,8 +132,14 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/webbycrown/blog-for-bagisto"
+        }
+    ],
     "support": {
         "issues": "https://github.com/bagisto/bagisto/issues",
         "forum": "https://forums.bagisto.com",

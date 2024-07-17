@@ -25,6 +25,7 @@
         @switch ($customization->type)
             @case ($customization::IMAGE_CAROUSEL)
                 <!-- Image Carousel -->
+{{--                    {"images": [{"link": "", "image": "storage/theme/1/dd9QjOh0m9tFRzBxXAvV62oStr95TKWSS8nvhwuX.webp", "title": "Get Ready For New Collection"}, {"link": "", "image": "storage/theme/1/UZlEmgjqbmvy9YxEHnomFihcAyhPnCJmEVEhVuYC.webp", "title": "Get Ready For New Collection"}, {"link": "", "image": "storage/theme/1/5vnUuUPT2RQKz3SwGPTzOy2tzKHtU88HgkmkfJ41.webp", "title": "Get Ready For New Collection"}, {"link": "", "image": "storage/theme/1/52FpU3hjodYIqxna1wEBlAUzz8IsLkrZdYUyrps4.webp", "title": "Get Ready For New Collection"}]}--}}
                 <x-shop::carousel :options="$data" aria-label="Image Carousel" />
                 @break
 {{--            @case ($customization::STATIC_CONTENT)--}}
