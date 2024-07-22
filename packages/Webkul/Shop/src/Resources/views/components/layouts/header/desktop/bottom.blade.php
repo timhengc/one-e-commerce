@@ -1,13 +1,13 @@
 {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.before') !!}
 
+{{--  HEADER 第一行 --}}
 <div
     class="flex min-h-[78px] w-full justify-between border border-b-0 border-l-0 border-r-0 border-t-0 px-[90px] max-1180:px-8">
     <!--
         This section will provide categories for the first, second, and third levels. If
         additional levels are required, users can customize them according to their needs.
     -->
-    <!-- Left Nagivation Section -->
-{{--    HEADER的左半边: LOGO + 分类--}}
+{{--    LOGO  --}}
     <div class="flex items-center gap-x-10 max-[1180px]:gap-x-5">
         {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.logo.before') !!}
 
@@ -27,7 +27,7 @@
         {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.logo.after') !!}
     </div>
 
-
+{{--  搜索栏  --}}
     <!-- Right Nagivation Section -->
     <div class="flex items-center gap-x-9 max-[1100px]:gap-x-6 max-lg:gap-x-8">
 
@@ -82,9 +82,11 @@
 
     </div>
 </div>
+
+{{--  HEADER 第二行  --}}
 <div
     class="flex items-center min-h-[78px] w-full justify-between border border-b border-l-0 border-r-0 border-t-0 px-[90px] max-1180:px-8">
-
+{{--  分类  --}}
     <div class="flex items-center gap-x-10 max-[1180px]:gap-x-5">
         {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.category.before') !!}
 
@@ -107,10 +109,10 @@
                 ></span>
             </div>
         </v-desktop-category>
-
         {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.category.after') !!}
     </div>
 
+{{--  购物车 + 个人主页  --}}
     <div class="mt-1.5 flex gap-x-8 max-[1100px]:gap-x-6 max-lg:gap-x-8">
 
         {!! view_render_event('bagisto.shop.components.layouts.header.desktop.bottom.compare.before') !!}
@@ -264,10 +266,12 @@
 </div>
 
 @pushOnce('scripts')
+{{--  分类标签的前端实现  --}}
     <script
         type="text/x-template"
         id="v-desktop-category-template"
     >
+{{--    如果页面还在加载，就先显示几个灰色块    --}}
         <div
             class="flex items-center gap-5"
             v-if="isLoading"
@@ -286,16 +290,19 @@
                 class="shimmer h-6 w-20 rounded"
                 role="presentation"
             ></span>
-        </div>
 
+        </div>
+{{--   否则，显示分类  --}}
         <div
             class="flex items-center"
             v-else
         >
+{{--     遍历每个分类       --}}
             <div
                 class="group relative flex h-[77px] items-center border-b-4 border-transparent hover:border-b-4 hover:border-navyBlue"
                 v-for="category in categories"
             >
+            {{--        显示分类超链接        --}}
                 <span>
                     <a
                         :href="category.url"
@@ -304,7 +311,7 @@
                         @{{ category.name }}
                     </a>
                 </span>
-
+            {{--      这里应该是分类的下拉列表      --}}
                 <div
                     class="pointer-events-none absolute top-[78px] z-[1] max-h-[580px] w-max max-w-[1260px] translate-y-1 overflow-auto overflow-x-auto border border-b-0 border-l-0 border-r-0 border-t border-[#F3F3F3] bg-white p-9 opacity-0 shadow-[0_6px_6px_1px_rgba(0,0,0,.3)] transition duration-300 ease-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-hover:duration-200 group-hover:ease-in ltr:-left-9 rtl:-right-9"
                     v-if="category.children.length"
@@ -338,6 +345,19 @@
                         </div>
                     </div>
                 </div>
+            </div>
+{{--      在分类的末尾添加Blog超链接      --}}
+            <div
+                class="group relative flex h-[77px] items-center border-b-4 border-transparent hover:border-b-4 hover:border-navyBlue"
+            >
+                <span>
+                    <a
+                        href="/blog"
+                        class="inline-block px-5 uppercase"
+                    >
+                        Blog
+                    </a>
+                </span>
             </div>
         </div>
     </script>
