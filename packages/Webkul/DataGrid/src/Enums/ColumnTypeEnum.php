@@ -49,13 +49,18 @@ enum ColumnTypeEnum: string
     case AGGREGATE = 'aggregate';
 
     /**
+     * Number. 当作Integer来处理
+     */
+    case NUMBER = 'number';
+
+    /**
      * Get the corresponding class name for the column type.
      */
     public static function getClassName(string $type): string
     {
         return match ($type) {
             self::STRING->value    => Text::class,
-            self::INTEGER->value   => Integer::class,
+            self::INTEGER->value, self::NUMBER->value => Integer::class,
             self::FLOAT->value     => Decimal::class,
             self::BOOLEAN->value   => Boolean::class,
             self::DATE->value      => Date::class,

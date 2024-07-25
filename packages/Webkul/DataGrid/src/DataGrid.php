@@ -557,26 +557,32 @@ abstract class DataGrid
      */
     protected function prepare(): void
     {
+        //触发事件
         $this->dispatchEvent('prepare.before', $this);
 
         $this->prepareColumns();
 
+        //触发事件
         $this->dispatchEvent('columns.prepare.after', $this);
 
         $this->prepareActions();
 
+        //触发事件
         $this->dispatchEvent('actions.prepare.after', $this);
 
         $this->prepareMassActions();
 
+        //触发事件
         $this->dispatchEvent('mass_actions.prepare.after', $this);
 
         $this->setQueryBuilder();
 
+        //触发事件
         $this->dispatchEvent('query_builder.prepare.after', $this);
 
         $this->processRequest();
 
+        //触发事件
         $this->dispatchEvent('prepare.after', $this);
     }
 }
