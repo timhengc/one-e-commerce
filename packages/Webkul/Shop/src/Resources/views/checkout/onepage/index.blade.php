@@ -54,7 +54,6 @@
         @endif
 
         {!! view_render_event('bagisto.shop.checkout.onepage.breadcrumbs.after') !!}
-
         <!-- Checkout Vue Component -->
         <v-checkout>
             <!-- Shimmer Effect -->
@@ -146,7 +145,7 @@
                             prices: "{{ core()->getConfigData('sales.taxes.shopping_cart.display_prices') }}",
 
                             subtotal: "{{ core()->getConfigData('sales.taxes.shopping_cart.display_subtotal') }}",
-                            
+
                             shipping: "{{ core()->getConfigData('sales.taxes.shopping_cart.display_shipping_amount') }}",
                         },
 

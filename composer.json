@@ -46,7 +46,8 @@
         "shetabit/visitor": "^4.1",
         "spatie/laravel-responsecache": "^7.4",
         "spatie/laravel-sitemap": "^6.2",
-        "webbycrown/blog-for-bagisto": "dev-main"
+        "webbycrown/blog-for-bagisto": "dev-main",
+        "erusev/parsedown": "^1.7"
     },
     "require-dev": {
         "bagisto/laravel-datafaker": "dev-master",

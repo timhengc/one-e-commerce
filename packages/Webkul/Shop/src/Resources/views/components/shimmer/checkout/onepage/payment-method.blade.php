@@ -3,7 +3,6 @@
         <h2 class="shimmer h-8 w-[225px]"></h2>
         <span class="shimmer h-6 w-6"></span>
     </div>
-
     <div class="mt-8 flex flex-wrap gap-7">
         <div class="relative max-sm:max-w-full max-sm:flex-auto">
             <span class="shimmer absolute top-5 block h-6 w-6 rounded-full ltr:right-5 rtl:left-5"></span>
@@ -15,7 +14,6 @@
                 <p class="shimmer mt-2.5 h-[18px] w-[70%]"></p>
             </label>
         </div>
-
         <div class="relative max-sm:max-w-full max-sm:flex-auto">
             <span class="shimmer absolute top-5 block h-6 w-6 rounded-full ltr:right-5 rtl:left-5"></span>
 

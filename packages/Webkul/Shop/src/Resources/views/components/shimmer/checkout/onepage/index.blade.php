@@ -5,7 +5,7 @@
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <h2 class="shimmer h-8 w-[180px]"></h2>
-                
+
                 <span class="shimmer h-6 w-6"></span>
             </div>
 
@@ -14,7 +14,6 @@
 
         <!-- Shipping Method Shimmer -->
         <x-shop::shimmer.checkout.onepage.shipping-method />
-
         <!-- Payment Method Shimmer -->
         <x-shop::shimmer.checkout.onepage.payment-method />
     </div>
@@ -26,7 +25,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <h2 class="shimmer h-8 w-[180px]"></h2>
-            
+
             <span class="shimmer h-6 w-6"></span>
         </div>
 
