@@ -178,9 +178,10 @@
     </script>
 
     <script type="module">
+
         app.component('v-tinymce', {
             template: '#v-tinymce-template',
-                
+
             props: ['selector', 'field', 'prompt'],
 
             data() {
@@ -224,7 +225,7 @@
                         initTinyMCE: function(extraConfiguration) {
                             let self2 = this;
 
-                            let config = {  
+                            let config = {
                                 relative_urls: false,
                                 menubar: false,
                                 remove_script_host: false,
@@ -248,6 +249,7 @@
                                 },
 
                                 images_upload_handler: image_upload_handler,
+
                             });
                         },
 
