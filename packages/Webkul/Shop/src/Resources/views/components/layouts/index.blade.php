@@ -78,19 +78,6 @@
             {!! core()->getConfigData('general.content.custom_scripts.custom_css') !!}
         </style>
 
-{{--        <style>--}}
-{{--            .blog-content h1 {--}}
-{{--                font-size: 2.5em;--}}
-{{--                font-weight: bold;--}}
-{{--                margin-bottom: 20px;--}}
-{{--            }--}}
-{{--            .blog-content h2 {--}}
-{{--                font-size: 2em;--}}
-{{--                font-weight: bold;--}}
-{{--                margin-bottom: 15px;--}}
-{{--            }--}}
-{{--        </style>--}}
-
         {!! view_render_event('bagisto.shop.layout.head.after') !!}
 
     </head>
